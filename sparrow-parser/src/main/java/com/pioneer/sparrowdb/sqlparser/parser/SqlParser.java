@@ -1,6 +1,8 @@
 package com.pioneer.sparrowdb.sqlparser.parser;
 
 import com.pioneer.sparrowdb.sqlparser.ParsingException;
+import com.pioneer.sparrowdb.sqlparser.codegen.SparrowSQLLexer;
+import com.pioneer.sparrowdb.sqlparser.codegen.SparrowSQLParser;
 import com.pioneer.sparrowdb.sqlparser.tree.Node;
 import com.pioneer.sparrowdb.sqlparser.tree.Statement;
 import org.antlr.v4.runtime.*;

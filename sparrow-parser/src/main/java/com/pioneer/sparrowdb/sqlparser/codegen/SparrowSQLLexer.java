@@ -1,5 +1,5 @@
 // Generated from /Users/bytedance/Project/pioneeryi/SparrowDB/SparrowDB/sparrow-parser/antlr4/SparrowSQL.g4 by ANTLR 4.10.1
-package com.pioneer.sparrowdb.sqlparser.parser;
+package com.pioneer.sparrowdb.sqlparser.codegen;
 
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
