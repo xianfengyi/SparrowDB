@@ -14,6 +14,8 @@
         <module>sparrow-server</module>
         <module>sparrow-jdbc</module>
         <module>sparrow-cli</module>
+        <module>sparrow-client</module>
+        <module>sparrow-main</module>
     </modules>
 
     <properties>
