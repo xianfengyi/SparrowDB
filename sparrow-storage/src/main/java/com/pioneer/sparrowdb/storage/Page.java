@@ -1,16 +1,23 @@
 package com.pioneer.sparrowdb.storage;
 
-public interface DBPage {
+import com.pioneer.sparrowdb.storage.exception.StorageException;
+
+public interface Page {
 
     /**
-     * @return the unique tableid hashcode with this PageId
+     * @return the page id
      */
-    int getTableId();
+    PageID getPageID();
 
     /**
-     * @return the page number
+     * 序列化page数据
      */
-    int getPageNo();
+    byte[] serialize() throws StorageException;
+
+    /**
+     * 反序列化pageData
+     */
+    void deserialize(byte[] pageData) throws StorageException;
 
     /**
      * Generates a byte array representing the contents of this page.

@@ -16,6 +16,8 @@ public interface DBFile {
      */
     int DEFAULT_PAGESIZE = 8192;
 
+    String getFileID();
+
     /**
      * Get DB file type.
      *
@@ -30,6 +32,17 @@ public interface DBFile {
      */
     int getPageSize();
 
+    Page readPage(PageID pageId);
+
+    void writePage(Page page);
+
+    void insertTuple(Tuple tuple);
+
+    void deleteTuple(Tuple tuple);
+
+    TupleDesc getTupleDesc();
+
+    DBFileIterator getIterator();
 
     enum DBFileType {
 
