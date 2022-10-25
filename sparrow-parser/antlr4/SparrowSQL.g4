@@ -10,6 +10,33 @@ singleStatement
 
 statement
     : query                                                            #statementDefault
+    | CREATE TABLE (IF NOT EXISTS)? qualifiedName
+            '(' tableElement (',' tableElement)* ')'
+             (COMMENT string)?                                         #createTable
+    | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
+    | INSERT INTO qualifiedName columnAliases? query                   #insertInto
+    | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
+    | ALTER TABLE (IF EXISTS)? from=qualifiedName
+            RENAME TO to=qualifiedName                                 #renameTable
+    | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
+        RENAME COLUMN (IF EXISTS)? from=identifier TO to=identifier    #renameColumn
+    | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
+        DROP COLUMN (IF EXISTS)? column=qualifiedName                  #dropColumn
+    | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
+        ADD COLUMN (IF NOT EXISTS)? column=columnDefinition            #addColumn
+    ;
+
+tableElement
+    : columnDefinition
+    | likeClause
+    ;
+
+columnDefinition
+    : identifier type (NOT NULL)? (COMMENT string)?
+    ;
+
+likeClause
+    : LIKE qualifiedName
     ;
 
 query
@@ -156,10 +183,20 @@ primaryExpression
     | booleanValue                                                                        #booleanLiteral
     | string                                                                              #stringLiteral
     | identifier                                                                          #columnReference
+    | '?'                                                                                 #parameter
+    | '(' expression (',' expression)+ ')'                                                #rowConstructor
     ;
 
 string
     : STRING                                #basicStringLiteral
+    ;
+
+type
+    : qualifiedName ('(' typeParameter (',' typeParameter)* ')')?
+    ;
+
+typeParameter
+    : INTEGER_VALUE | type
     ;
 
 comparisonOperator
@@ -187,7 +224,9 @@ number
     | INTEGER_VALUE  #integerLiteral
     ;
 
+ADD: 'ADD';
 ALL: 'ALL';
+ALTER: 'ALTER';
 AND: 'AND';
 AS: 'AS';
 ASC: 'ASC';
@@ -195,18 +234,27 @@ BERNOULLI: 'BERNOULLI';
 BETWEEN: 'BETWEEN';
 BY: 'BY';
 CASE: 'CASE';
+COLUMN: 'COLUMN';
+COMMENT: 'COMMENT';
+CREATE: 'CREATE';
 CROSS: 'CROSS';
+DELETE: 'DELETE';
 DESC: 'DESC';
 DISTINCT: 'DISTINCT';
+DROP: 'DROP';
 ELSE: 'ELSE';
 END: 'END';
+EXISTS: 'EXISTS';
 FALSE: 'FALSE';
 FROM: 'FROM';
 FULL: 'FULL';
 GROUP: 'GROUP';
 JOIN: 'JOIN';
+IF: 'IF';
 IN: 'IN';
 INNER: 'INNER';
+INSERT: 'INSERT';
+INTO: 'INTO';
 IS: 'IS';
 LEFT: 'LEFT';
 LIMIT: 'LIMIT';
@@ -219,6 +267,7 @@ ON: 'ON';
 OR: 'OR';
 ORDER: 'ORDER';
 OUTER: 'OUTER';
+RENAME: 'RENAME';
 RIGHT: 'RIGHT';
 ROW: 'ROW';
 ROWS: 'ROWS';
@@ -227,6 +276,7 @@ SYSTEM: 'SYSTEM';
 TABLE: 'TABLE';
 TABLESAMPLE: 'TABLESAMPLE';
 THEN: 'THEN';
+TO: 'TO';
 TRUE: 'TRUE';
 VALUES: 'VALUES';
 WHEN: 'WHEN';
