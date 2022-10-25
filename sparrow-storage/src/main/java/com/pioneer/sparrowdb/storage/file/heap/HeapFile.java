@@ -11,16 +11,6 @@ import java.io.RandomAccessFile;
 public class HeapFile implements DBFile {
 
     /**
-     * The minimum page size is 512 bytes.
-     */
-    public static final int MIN_PAGESIZE = 512;
-
-    /**
-     * The maximum page size is 64K bytes.
-     */
-    public static final int MAX_PAGESIZE = 65536;
-
-    /**
      * The default page size is 8K bytes.
      */
     public static final int DEFAULT_PAGESIZE = 8192;
