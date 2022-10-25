@@ -162,6 +162,12 @@ public class AstBuilder extends SparrowSQLBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitBasicStringLiteral(SparrowSQLParser.BasicStringLiteralContext context)
+    {
+        return new StringLiteral(unquote(context.STRING().getText()));
+    }
+
+    @Override
     public Node visitIntegerLiteral(SparrowSQLParser.IntegerLiteralContext context) {
         return new LongLiteral(context.getText());
     }
@@ -202,6 +208,32 @@ public class AstBuilder extends SparrowSQLBaseVisitor<Node> {
                 visit(context.tableElement(), TableElement.class),
                 context.EXISTS() != null,
                 properties,
+                comment);
+    }
+
+    @Override
+    public Node visitDropTable(SparrowSQLParser.DropTableContext context)
+    {
+        return new DropTable(getQualifiedName(context.qualifiedName()), context.EXISTS() != null);
+    }
+
+
+    @Override
+    public Node visitColumnDefinition(SparrowSQLParser.ColumnDefinitionContext context)
+    {
+        Optional<String> comment = Optional.empty();
+        if (context.COMMENT() != null) {
+            comment = Optional.of(((StringLiteral) visit(context.string())).getValue());
+        }
+
+        List<Property> properties = ImmutableList.of();
+
+        boolean nullable = context.NOT() == null;
+
+        return new ColumnDefinition(
+                (Identifier) visit(context.identifier()),
+                context.type().getText(),
+                nullable, properties,
                 comment);
     }
 
@@ -322,5 +354,11 @@ public class AstBuilder extends SparrowSQLBaseVisitor<Node> {
         }
 
         throw new IllegalArgumentException("Unsupported operator: " + symbol.getText());
+    }
+
+    private static String unquote(String value)
+    {
+        return value.substring(1, value.length() - 1)
+                .replace("''", "'");
     }
 }

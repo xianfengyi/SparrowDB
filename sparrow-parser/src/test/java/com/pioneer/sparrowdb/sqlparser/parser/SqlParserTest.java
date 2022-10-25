@@ -13,7 +13,7 @@ public class SqlParserTest {
     private SqlParser sqlParser = new SqlParser();
 
     @Test
-    public void createStatement() {
+    public void testSelect() {
         String sql = "select name,age from employee where age=12 order by age desc offset 0 limit 1";
         Statement statement = sqlParser.createStatement(sql);
         Query query = (Query) statement;
@@ -46,5 +46,42 @@ public class SqlParserTest {
 
         Optional<String> limit = specification.getLimit();
         Assert.assertEquals("1", limit.get());
+    }
+
+    @Test
+    public void testCreateTable() {
+        String sql = "create table states(id integer,name varchar(10))";
+        Statement statement = sqlParser.createStatement(sql);
+
+        String expected =
+                "CreateTable{name=states, elements=[ColumnDefinition{name=id, type=integer, nullable=true," + " " +
+                        "properties=[], comment=Optional.empty}, ColumnDefinition{name=name, type=varchar(10), " +
+                        "nullable=true," + " properties=[], comment=Optional.empty}], notExists=false, properties=[]," +
+                        " comment=Optional.empty}";
+        Assert.assertEquals(expected, statement.toString());
+    }
+
+    @Test
+    public void testDropTable() {
+        String sql = "drop table states";
+        Statement statement = sqlParser.createStatement(sql);
+        String expected = "DropTable{tableName=states, exists=false}";
+        Assert.assertEquals(expected, statement.toString());
+    }
+
+    @Test
+    public void testInsertData() {
+        String sql = "insert into states(id,name) values(1,'pioneeer')";
+        Statement statement = sqlParser.createStatement(sql);
+        String expected = "Insert{target=states, columns=Optional[[id, name]], query=Query{orderBy=Optional.empty}}";
+        Assert.assertEquals(expected, statement.toString());
+    }
+
+    @Test
+    public void testDeleteData() {
+        String sql = "delete from states where id=1";
+        Statement statement = sqlParser.createStatement(sql);
+        String expected = "Delete{table=states, where=Optional[id=1]}";
+        Assert.assertEquals(expected, statement.toString());
     }
 }

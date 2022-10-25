@@ -32,6 +32,7 @@ public final class ColumnDefinition extends TableElement
 
     public ColumnDefinition(Identifier name, String type, boolean nullable, List<Property> properties, Optional<String> comment)
     {
+        super();
         this.name = requireNonNull(name, "name is null");
         this.type = requireNonNull(type, "type is null");
         this.nullable = nullable;
