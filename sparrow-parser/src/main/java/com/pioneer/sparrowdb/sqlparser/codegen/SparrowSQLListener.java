@@ -1,6 +1,4 @@
-// Generated from /Users/bytedance/Project/pioneeryi/SparrowDB/SparrowDB/sparrow-parser/antlr4/SparrowSQL.g4 by ANTLR 4.10.1
-package com.pioneer.sparrowdb.sqlparser.codegen;
-
+package com.pioneer.sparrowdb.sqlparser.codegen;// Generated from /Users/bytedance/Project/pioneeryi/SparrowDB/SparrowDB/sparrow-parser/antlr4/SparrowSQL.g4 by ANTLR 4.10.1
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -30,6 +28,132 @@ public interface SparrowSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStatementDefault(SparrowSQLParser.StatementDefaultContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code createTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreateTable(SparrowSQLParser.CreateTableContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code createTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreateTable(SparrowSQLParser.CreateTableContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code dropTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterDropTable(SparrowSQLParser.DropTableContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code dropTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitDropTable(SparrowSQLParser.DropTableContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code insertInto}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterInsertInto(SparrowSQLParser.InsertIntoContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code insertInto}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitInsertInto(SparrowSQLParser.InsertIntoContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code delete}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterDelete(SparrowSQLParser.DeleteContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code delete}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitDelete(SparrowSQLParser.DeleteContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code renameTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterRenameTable(SparrowSQLParser.RenameTableContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code renameTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitRenameTable(SparrowSQLParser.RenameTableContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code renameColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterRenameColumn(SparrowSQLParser.RenameColumnContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code renameColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitRenameColumn(SparrowSQLParser.RenameColumnContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code dropColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterDropColumn(SparrowSQLParser.DropColumnContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code dropColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitDropColumn(SparrowSQLParser.DropColumnContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code addColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterAddColumn(SparrowSQLParser.AddColumnContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code addColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitAddColumn(SparrowSQLParser.AddColumnContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SparrowSQLParser#tableElement}.
+	 * @param ctx the parse tree
+	 */
+	void enterTableElement(SparrowSQLParser.TableElementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SparrowSQLParser#tableElement}.
+	 * @param ctx the parse tree
+	 */
+	void exitTableElement(SparrowSQLParser.TableElementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SparrowSQLParser#columnDefinition}.
+	 * @param ctx the parse tree
+	 */
+	void enterColumnDefinition(SparrowSQLParser.ColumnDefinitionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SparrowSQLParser#columnDefinition}.
+	 * @param ctx the parse tree
+	 */
+	void exitColumnDefinition(SparrowSQLParser.ColumnDefinitionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SparrowSQLParser#likeClause}.
+	 * @param ctx the parse tree
+	 */
+	void enterLikeClause(SparrowSQLParser.LikeClauseContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SparrowSQLParser#likeClause}.
+	 * @param ctx the parse tree
+	 */
+	void exitLikeClause(SparrowSQLParser.LikeClauseContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SparrowSQLParser#query}.
 	 * @param ctx the parse tree
@@ -565,6 +689,30 @@ public interface SparrowSQLListener extends ParseTreeListener {
 	 */
 	void exitColumnReference(SparrowSQLParser.ColumnReferenceContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code parameter}
+	 * labeled alternative in {@link SparrowSQLParser#primaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterParameter(SparrowSQLParser.ParameterContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code parameter}
+	 * labeled alternative in {@link SparrowSQLParser#primaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitParameter(SparrowSQLParser.ParameterContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code rowConstructor}
+	 * labeled alternative in {@link SparrowSQLParser#primaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterRowConstructor(SparrowSQLParser.RowConstructorContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code rowConstructor}
+	 * labeled alternative in {@link SparrowSQLParser#primaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitRowConstructor(SparrowSQLParser.RowConstructorContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code basicStringLiteral}
 	 * labeled alternative in {@link SparrowSQLParser#string}.
 	 * @param ctx the parse tree
@@ -576,6 +724,26 @@ public interface SparrowSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBasicStringLiteral(SparrowSQLParser.BasicStringLiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SparrowSQLParser#type}.
+	 * @param ctx the parse tree
+	 */
+	void enterType(SparrowSQLParser.TypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SparrowSQLParser#type}.
+	 * @param ctx the parse tree
+	 */
+	void exitType(SparrowSQLParser.TypeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SparrowSQLParser#typeParameter}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeParameter(SparrowSQLParser.TypeParameterContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SparrowSQLParser#typeParameter}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeParameter(SparrowSQLParser.TypeParameterContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SparrowSQLParser#comparisonOperator}.
 	 * @param ctx the parse tree

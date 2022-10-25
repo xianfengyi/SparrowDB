@@ -1,14 +1,12 @@
 package com.pioneer.sparrowdb.sqlparser.parser;
 
+import com.google.common.collect.ImmutableList;
 import com.pioneer.sparrowdb.sqlparser.ParsingException;
 import com.pioneer.sparrowdb.sqlparser.codegen.SparrowSQLBaseVisitor;
 import com.pioneer.sparrowdb.sqlparser.codegen.SparrowSQLLexer;
 import com.pioneer.sparrowdb.sqlparser.codegen.SparrowSQLParser;
 import com.pioneer.sparrowdb.sqlparser.tree.*;
-import com.pioneer.sparrowdb.sqlparser.tree.literal.BooleanLiteral;
-import com.pioneer.sparrowdb.sqlparser.tree.literal.DecimalLiteral;
-import com.pioneer.sparrowdb.sqlparser.tree.literal.DoubleLiteral;
-import com.pioneer.sparrowdb.sqlparser.tree.literal.LongLiteral;
+import com.pioneer.sparrowdb.sqlparser.tree.literal.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -189,6 +187,81 @@ public class AstBuilder extends SparrowSQLBaseVisitor<Node> {
     @Override
     public Node visitBooleanValue(SparrowSQLParser.BooleanValueContext context) {
         return new BooleanLiteral(context.getText());
+    }
+
+    @Override
+    public Node visitCreateTable(SparrowSQLParser.CreateTableContext context)
+    {
+        Optional<String> comment = Optional.empty();
+        if (context.COMMENT() != null) {
+            comment = Optional.of(((StringLiteral) visit(context.string())).getValue());
+        }
+        List<Property> properties = ImmutableList.of();
+        return new CreateTable(
+                getQualifiedName(context.qualifiedName()),
+                visit(context.tableElement(), TableElement.class),
+                context.EXISTS() != null,
+                properties,
+                comment);
+    }
+
+    @Override
+    public Node visitInsertInto(SparrowSQLParser.InsertIntoContext context)
+    {
+        Optional<List<Identifier>> columnAliases = Optional.empty();
+        if (context.columnAliases() != null) {
+            columnAliases = Optional.of(visit(context.columnAliases().identifier(), Identifier.class));
+        }
+
+        return new Insert(
+                getQualifiedName(context.qualifiedName()),
+                columnAliases,
+                (Query) visit(context.query()));
+    }
+
+    @Override
+    public Node visitDelete(SparrowSQLParser.DeleteContext context)
+    {
+        return new Delete(
+                new Table(getQualifiedName(context.qualifiedName())),
+                visitIfPresent(context.booleanExpression(), Expression.class));
+    }
+
+    @Override
+    public Node visitRenameTable(SparrowSQLParser.RenameTableContext context)
+    {
+        return new RenameTable(getQualifiedName(context.from), getQualifiedName(context.to), context.EXISTS() != null);
+    }
+
+    @Override
+    public Node visitRenameColumn(SparrowSQLParser.RenameColumnContext context)
+    {
+        return new RenameColumn(
+                getQualifiedName(context.tableName),
+                (Identifier) visit(context.from),
+                (Identifier) visit(context.to),
+                context.EXISTS().stream().anyMatch(node -> node.getSymbol().getTokenIndex() < context.COLUMN().getSymbol().getTokenIndex()),
+                context.EXISTS().stream().anyMatch(node -> node.getSymbol().getTokenIndex() > context.COLUMN().getSymbol().getTokenIndex()));
+    }
+
+    @Override
+    public Node visitAddColumn(SparrowSQLParser.AddColumnContext context)
+    {
+        return new AddColumn(
+                getQualifiedName(context.qualifiedName()),
+                (ColumnDefinition) visit(context.columnDefinition()),
+                context.EXISTS().stream().anyMatch(node -> node.getSymbol().getTokenIndex() < context.COLUMN().getSymbol().getTokenIndex()),
+                context.EXISTS().stream().anyMatch(node -> node.getSymbol().getTokenIndex() > context.COLUMN().getSymbol().getTokenIndex()));
+    }
+
+    @Override
+    public Node visitDropColumn(SparrowSQLParser.DropColumnContext context)
+    {
+        return new DropColumn(
+                getQualifiedName(context.tableName),
+                (Identifier) visit(context.column),
+                context.EXISTS().stream().anyMatch(node -> node.getSymbol().getTokenIndex() < context.COLUMN().getSymbol().getTokenIndex()),
+                context.EXISTS().stream().anyMatch(node -> node.getSymbol().getTokenIndex() > context.COLUMN().getSymbol().getTokenIndex()));
     }
 
     private <T> List<T> visit(List<? extends ParserRuleContext> contexts, Class<T> clazz) {

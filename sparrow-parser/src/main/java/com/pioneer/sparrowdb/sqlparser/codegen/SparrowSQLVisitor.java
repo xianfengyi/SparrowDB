@@ -1,6 +1,4 @@
-// Generated from /Users/bytedance/Project/pioneeryi/SparrowDB/SparrowDB/sparrow-parser/antlr4/SparrowSQL.g4 by ANTLR 4.10.1
-package com.pioneer.sparrowdb.sqlparser.codegen;
-
+package com.pioneer.sparrowdb.sqlparser.codegen;// Generated from /Users/bytedance/Project/pioneeryi/SparrowDB/SparrowDB/sparrow-parser/antlr4/SparrowSQL.g4 by ANTLR 4.10.1
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -24,6 +22,80 @@ public interface SparrowSQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStatementDefault(SparrowSQLParser.StatementDefaultContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code createTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCreateTable(SparrowSQLParser.CreateTableContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code dropTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDropTable(SparrowSQLParser.DropTableContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code insertInto}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInsertInto(SparrowSQLParser.InsertIntoContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code delete}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDelete(SparrowSQLParser.DeleteContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code renameTable}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRenameTable(SparrowSQLParser.RenameTableContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code renameColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRenameColumn(SparrowSQLParser.RenameColumnContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code dropColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDropColumn(SparrowSQLParser.DropColumnContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code addColumn}
+	 * labeled alternative in {@link SparrowSQLParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAddColumn(SparrowSQLParser.AddColumnContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SparrowSQLParser#tableElement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTableElement(SparrowSQLParser.TableElementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SparrowSQLParser#columnDefinition}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitColumnDefinition(SparrowSQLParser.ColumnDefinitionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SparrowSQLParser#likeClause}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLikeClause(SparrowSQLParser.LikeClauseContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SparrowSQLParser#query}.
 	 * @param ctx the parse tree
@@ -339,12 +411,38 @@ public interface SparrowSQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitColumnReference(SparrowSQLParser.ColumnReferenceContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code parameter}
+	 * labeled alternative in {@link SparrowSQLParser#primaryExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParameter(SparrowSQLParser.ParameterContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code rowConstructor}
+	 * labeled alternative in {@link SparrowSQLParser#primaryExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRowConstructor(SparrowSQLParser.RowConstructorContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code basicStringLiteral}
 	 * labeled alternative in {@link SparrowSQLParser#string}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitBasicStringLiteral(SparrowSQLParser.BasicStringLiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SparrowSQLParser#type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitType(SparrowSQLParser.TypeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SparrowSQLParser#typeParameter}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeParameter(SparrowSQLParser.TypeParameterContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SparrowSQLParser#comparisonOperator}.
 	 * @param ctx the parse tree

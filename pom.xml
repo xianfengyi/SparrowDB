@@ -28,6 +28,7 @@
         <junit.version>4.11</junit.version>
         <logback.version>1.2.3</logback.version>
         <commons-csv.version>1.8</commons-csv.version>
+        <slice.version>0.44</slice.version>
     </properties>
 
     <dependencies>
