@@ -16,6 +16,11 @@ public class Console {
 
     private static final String PROMPT_NAME = "sparrow";
 
+    public boolean run() {
+        runConsole();
+        return true;
+    }
+
     private static void runConsole() {
         try (LineReader reader = new LineReader(getHistory())) {
             String commandPrompt = PROMPT_NAME + "> ";
