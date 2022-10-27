@@ -7,6 +7,7 @@ import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
 import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -153,8 +154,11 @@ public class BufferPool {
      */
     public void insertTuple(TransactionId tid, int tableId, Tuple t) throws StorageException, IOException,
             TransactionAbortedException {
-        // some code goes here
-        // not necessary for proj1
+        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(tableId);
+        ArrayList<Page> affectedPages = table.insertTuple(tid, t);
+        for (Page page : affectedPages) {
+            page.markDirty(true, tid);
+        }
     }
 
     /**

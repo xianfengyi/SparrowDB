@@ -31,10 +31,7 @@ public class SqlExecutorTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
 
-    @Test
-    public void testSelect() {
         // construct a 3-column table schema
         Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
         String names[] = new String[]{"field0", "field1", "field2"};
@@ -42,14 +39,28 @@ public class SqlExecutorTest {
 
         // create the table, associate it with some_data_file.dat
         // and tell the catalog about the schema of this table.
-        String filePath = SqlExecutorTest.class.getClassLoader().getResource("data/some_data_file.dat").getPath();
-        HeapFile table1 = new HeapFile(new File(filePath), descriptor);
+        String datFilePath = SqlExecutorTest.class.getClassLoader().getResource("data/some_data_file.dat").getPath();
+        HeapFile table1 = new HeapFile(new File(datFilePath), descriptor);
         Database.getCatalog().addTable(table1, "test");
+    }
 
-        String sql = "select field0,field1,field2 from test where field1=1 offset 0 limit 2";
+    @Test
+    public void testSelect() {
+        String sql = "select field0,field1,field2 from test";
 
         SqlExecutor executor = new SqlExecutor();
         executor.execute(sql);
+    }
+
+    @Test
+    public void testInsert() {
+        SqlExecutor executor = new SqlExecutor();
+
+        String insertSql = "insert into test(field0,field1,field2)values(6,6,6)";
+        executor.execute(insertSql);
+
+        String selectSql = "select field0,field1,field2 from test";
+        executor.execute(selectSql);
     }
 
 }

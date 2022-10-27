@@ -10,8 +10,8 @@ public class TupleIterator implements DbIterator {
 	 * 
 	 */
     private static final long serialVersionUID = 1L;
-    Iterator<Tuple> i = null;
-    TupleDesc td = null;
+    Iterator<Tuple> iterator = null;
+    TupleDesc tupleDesc = null;
     Iterable<Tuple> tuples = null;
 
     /**
@@ -22,7 +22,7 @@ public class TupleIterator implements DbIterator {
      *            The set of tuples to iterate over
      */
     public TupleIterator(TupleDesc td, Iterable<Tuple> tuples) {
-        this.td = td;
+        this.tupleDesc = td;
         this.tuples = tuples;
 
         // check that all tuples are the right TupleDesc
@@ -31,18 +31,19 @@ public class TupleIterator implements DbIterator {
                 throw new IllegalArgumentException(
                         "incompatible tuple in tuple set");
         }
+        open();
     }
 
     public void open() {
-        i = tuples.iterator();
+        iterator = tuples.iterator();
     }
 
     public boolean hasNext() {
-        return i.hasNext();
+        return iterator.hasNext();
     }
 
     public Tuple next() {
-        return i.next();
+        return iterator.next();
     }
 
     public void rewind() {
@@ -51,10 +52,10 @@ public class TupleIterator implements DbIterator {
     }
 
     public TupleDesc getTupleDesc() {
-        return td;
+        return tupleDesc;
     }
 
     public void close() {
-        i = null;
+        iterator = null;
     }
 }

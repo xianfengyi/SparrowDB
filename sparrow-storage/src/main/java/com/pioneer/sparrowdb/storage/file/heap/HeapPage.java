@@ -212,7 +212,8 @@ public class HeapPage implements Page {
 
         // padding
         // 填充字节0
-        int zerolen = BufferPool.PAGE_SIZE - (header.length + tupleDesc.getSize() * tuples.length); //- numSlots * td.getSize();
+        int zerolen = BufferPool.PAGE_SIZE - (header.length + tupleDesc.getSize() * tuples.length); //- numSlots * td
+        // .getSize();
         byte[] zeroes = new byte[zerolen];
         try {
             dos.write(zeroes, 0, zerolen);
@@ -249,7 +250,7 @@ public class HeapPage implements Page {
      *
      * @param t The tuple to delete
      * @throws StorageException if this tuple is not on this page, or tuple slot is
-     *                     already empty.
+     *                          already empty.
      */
     public void deleteTuple(Tuple t) throws StorageException {
         // some code goes here
@@ -260,13 +261,24 @@ public class HeapPage implements Page {
      * Adds the specified tuple to the page;  the tuple should be updated to reflect
      * that it is now stored on this page.
      *
-     * @param t The tuple to add.
+     * @param tuple The tuple to add.
      * @throws StorageException if the page is full (no empty slots) or tupledesc
-     *                     is mismatch.
+     *                          is mismatch.
      */
-    public void insertTuple(Tuple t) throws StorageException {
-        // some code goes here
-        // not necessary for lab1
+    public void insertTuple(Tuple tuple) throws StorageException {
+        if (!tupleDesc.equals(tuple.getTupleDesc())) {
+            throw new StorageException("tupleDesc is mismatch");
+        }
+        for (int i = 0; i < getNumTuples(); i++) {
+            if (!isSlotUsed(i)) {
+                tuples[i] = tuple;
+                //修改tuple的信息，表明它现在存储在这个page上
+                tuple.setRecordId(new RecordId(heapPageId, i));
+                markSlotUsed(i, true);
+                return;
+            }
+        }
+        throw new StorageException("the page is full (no empty slots)");
     }
 
     /**
@@ -343,7 +355,8 @@ public class HeapPage implements Page {
     }
 
     /**
-     * @return an iterator over all tuples on this page (calling remove on this iterator throws an UnsupportedOperationException)
+     * @return an iterator over all tuples on this page (calling remove on this iterator throws an
+     * UnsupportedOperationException)
      * (note that this iterator shouldn't return tuples in empty slots!)
      */
     public Iterator<Tuple> iterator() {

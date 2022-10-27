@@ -2,11 +2,16 @@ package com.pioneer.sparrowdb.executor;
 
 
 import com.pioneer.sparrowdb.planner.LogicalPlanner;
+import com.pioneer.sparrowdb.planner.plan.InsertNode;
 import com.pioneer.sparrowdb.planner.plan.PlanNode;
 import com.pioneer.sparrowdb.sqlparser.parser.SqlParser;
+import com.pioneer.sparrowdb.sqlparser.tree.Delete;
+import com.pioneer.sparrowdb.sqlparser.tree.Insert;
+import com.pioneer.sparrowdb.sqlparser.tree.Query;
 import com.pioneer.sparrowdb.sqlparser.tree.Statement;
 import com.pioneer.sparrowdb.storage.Tuple;
 import com.pioneer.sparrowdb.storage.TupleDesc;
+import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +24,17 @@ public class SqlExecutor {
         SqlParser sqlParser = new SqlParser();
         Statement statement = sqlParser.createStatement(sql);
         PlanNode planNode = logicalPlanner.planStatement(statement);
-        doExecute(planNode);
+        if (planNode ==null){
+            return;
+        }
+        if (statement instanceof Query) {
+            doExecuteQuery(planNode);
+        } else{
+            doExecuteNonQuery(planNode);
+        }
     }
 
-    private void doExecute(PlanNode planNode) {
+    private void doExecuteQuery(PlanNode planNode) {
         try {
             // and run it
             Tuple tup = planNode.getNextTuple();
@@ -42,5 +54,14 @@ public class SqlExecutor {
             columnNames.add(tdItem.getFieldName());
         }
         System.out.println(String.join(" ", columnNames));
+    }
+
+    private void doExecuteNonQuery(PlanNode planNode)  {
+        InsertNode insertNode = (InsertNode) planNode;
+        try {
+            insertNode.execute();
+        } catch (TransactionAbortedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

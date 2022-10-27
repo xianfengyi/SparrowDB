@@ -2,7 +2,10 @@ package com.pioneer.sparrowdb.planner;
 
 import com.pioneer.sparrowdb.planner.plan.*;
 import com.pioneer.sparrowdb.sqlparser.tree.*;
+import com.pioneer.sparrowdb.sqlparser.tree.literal.LongLiteral;
+import com.pioneer.sparrowdb.storage.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +45,9 @@ public class LogicalPlanner {
     }
 
     private PlanNode getWhereNode(PlanNode source, Optional<Expression> where) {
+        if (where.isEmpty()){
+            return source;
+        }
         // 当前先只支持一个等于表达式
         String whereExpr = where.get().toString();
         String[] whereExprArr = whereExpr.split("=");
@@ -74,7 +80,22 @@ public class LogicalPlanner {
     }
 
     private PlanNode createInsertPlan(Insert statement) {
-        return null;
+        int tableId = 1;
+        TupleDesc tupleDesc = Database.getCatalog().getTupleDesc(tableId);
+        Tuple tuple = new Tuple(tupleDesc);
+
+        QueryBody queryBody = statement.getQuery().getQueryBody();
+        Values values = (Values) queryBody;
+        int i = 0;
+        for (Expression expression : values.getRows()) {
+            Row row = (Row) expression;
+            for(Expression rowExpr:row.getItems()){
+                LongLiteral longLiteral = (LongLiteral) rowExpr;
+                tuple.setField(i++, new IntField((int) longLiteral.getValue()));
+            }
+        }
+        TupleIterator tupleIterator = new TupleIterator(tupleDesc, Arrays.asList(tuple));
+        return new InsertNode(tupleIterator);
     }
 
 }
