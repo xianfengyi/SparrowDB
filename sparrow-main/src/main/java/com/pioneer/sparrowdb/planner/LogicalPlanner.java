@@ -6,11 +6,21 @@ import com.pioneer.sparrowdb.sqlparser.tree.*;
 import java.util.List;
 import java.util.Optional;
 
-public class QueryPlanner implements Planner {
+public class LogicalPlanner {
 
-    private List<TableScanNode> tables;
+    public PlanNode planStatement(Statement statement) {
+        if (statement instanceof Insert) {
+            return createInsertPlan((Insert) statement);
+        } else if (statement instanceof Delete) {
+            return createDeletePlan((Delete) statement);
+        } else if (statement instanceof Query) {
+            return createQueryPlan((Query) statement);
+        }
+        throw new RuntimeException("not support this statement plan");
+    }
 
-    public PlanNode visitQuerySpecification(QuerySpecification querySpecification) {
+    private PlanNode createQueryPlan(Query statement) {
+        QuerySpecification querySpecification = (QuerySpecification) statement.getQueryBody();
         PlanNode root = null;
 
         root = getTableScanNode(querySpecification.getFrom());
@@ -58,4 +68,13 @@ public class QueryPlanner implements Planner {
         List<SelectItem> selectItems = select.getSelectItems();
         return new ProjectNode(source, selectItems);
     }
+
+    private PlanNode createDeletePlan(Delete statement) {
+        return null;
+    }
+
+    private PlanNode createInsertPlan(Insert statement) {
+        return null;
+    }
+
 }
