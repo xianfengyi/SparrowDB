@@ -19,10 +19,10 @@ public class TableScanNode extends PlanNode {
 
     private SeqScan seqScan;
 
-    public TableScanNode(int id, String name) {
+    public TableScanNode(int id, String name, TransactionId transactionId) {
         this.id = id;
         this.name = name;
-        seqScan = new SeqScan(new TransactionId(), 1);
+        seqScan = new SeqScan(transactionId, 1);
         try {
             seqScan.open();
         } catch (TransactionAbortedException e) {

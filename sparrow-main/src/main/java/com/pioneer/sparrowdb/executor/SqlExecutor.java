@@ -12,6 +12,7 @@ import com.pioneer.sparrowdb.sqlparser.tree.Statement;
 import com.pioneer.sparrowdb.storage.Tuple;
 import com.pioneer.sparrowdb.storage.TupleDesc;
 import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
+import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,8 @@ public class SqlExecutor {
     public void execute(String sql) {
         SqlParser sqlParser = new SqlParser();
         Statement statement = sqlParser.createStatement(sql);
-        PlanNode planNode = logicalPlanner.planStatement(statement);
+        TransactionId transactionId = new TransactionId();
+        PlanNode planNode = logicalPlanner.planStatement(statement,transactionId);
         if (planNode ==null){
             return;
         }

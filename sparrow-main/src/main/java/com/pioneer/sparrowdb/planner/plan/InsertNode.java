@@ -19,8 +19,9 @@ public class InsertNode extends PlanNode {
 
     private int insertCount;
 
-    public InsertNode(DbIterator dbIterator) {
+    public InsertNode(DbIterator dbIterator,TransactionId transactionId) {
         this.dbIterator = dbIterator;
+        this.transactionId =transactionId;
     }
 
     public void execute() throws TransactionAbortedException {

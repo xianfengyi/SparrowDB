@@ -4,6 +4,7 @@ import com.pioneer.sparrowdb.planner.plan.*;
 import com.pioneer.sparrowdb.sqlparser.tree.*;
 import com.pioneer.sparrowdb.sqlparser.tree.literal.LongLiteral;
 import com.pioneer.sparrowdb.storage.*;
+import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,22 +12,22 @@ import java.util.Optional;
 
 public class LogicalPlanner {
 
-    public PlanNode planStatement(Statement statement) {
+    public PlanNode planStatement(Statement statement, TransactionId transactionId) {
         if (statement instanceof Insert) {
-            return createInsertPlan((Insert) statement);
+            return createInsertPlan((Insert) statement, transactionId);
         } else if (statement instanceof Delete) {
-            return createDeletePlan((Delete) statement);
+            return createDeletePlan((Delete) statement, transactionId);
         } else if (statement instanceof Query) {
-            return createQueryPlan((Query) statement);
+            return createQueryPlan((Query) statement, transactionId);
         }
         throw new RuntimeException("not support this statement plan");
     }
 
-    private PlanNode createQueryPlan(Query statement) {
+    private PlanNode createQueryPlan(Query statement, TransactionId transactionId) {
         QuerySpecification querySpecification = (QuerySpecification) statement.getQueryBody();
         PlanNode root = null;
 
-        root = getTableScanNode(querySpecification.getFrom());
+        root = getTableScanNode(querySpecification.getFrom(), transactionId);
 
         root = getWhereNode(root, querySpecification.getWhere());
 
@@ -39,13 +40,13 @@ public class LogicalPlanner {
         return getProjectNode(root, querySpecification.getSelect());
     }
 
-    private PlanNode getTableScanNode(Optional<Relation> relation) {
+    private PlanNode getTableScanNode(Optional<Relation> relation, TransactionId transactionId) {
         Table table = (Table) relation.get();
-        return new TableScanNode(1, table.getName().toString());
+        return new TableScanNode(1, table.getName().toString(), transactionId);
     }
 
     private PlanNode getWhereNode(PlanNode source, Optional<Expression> where) {
-        if (where.isEmpty()){
+        if (where.isEmpty()) {
             return source;
         }
         // 当前先只支持一个等于表达式
@@ -75,11 +76,11 @@ public class LogicalPlanner {
         return new ProjectNode(source, selectItems);
     }
 
-    private PlanNode createDeletePlan(Delete statement) {
+    private PlanNode createDeletePlan(Delete statement, TransactionId transactionId) {
         return null;
     }
 
-    private PlanNode createInsertPlan(Insert statement) {
+    private PlanNode createInsertPlan(Insert statement, TransactionId transactionId) {
         int tableId = 1;
         TupleDesc tupleDesc = Database.getCatalog().getTupleDesc(tableId);
         Tuple tuple = new Tuple(tupleDesc);
@@ -89,13 +90,13 @@ public class LogicalPlanner {
         int i = 0;
         for (Expression expression : values.getRows()) {
             Row row = (Row) expression;
-            for(Expression rowExpr:row.getItems()){
+            for (Expression rowExpr : row.getItems()) {
                 LongLiteral longLiteral = (LongLiteral) rowExpr;
                 tuple.setField(i++, new IntField((int) longLiteral.getValue()));
             }
         }
         TupleIterator tupleIterator = new TupleIterator(tupleDesc, Arrays.asList(tuple));
-        return new InsertNode(tupleIterator);
+        return new InsertNode(tupleIterator, transactionId);
     }
 
 }

@@ -223,7 +223,7 @@ public class HeapFile implements DbFile {
             //如果遍历完当前页，测试是否还有页未遍历
             //注意要减一，这里与for循环的一般判断逻辑（迭代变量<长度）不同，是因为我们要在接下来代码中将pagePos加1才使用
             //如果不理解，可以自己举一个例子想象运行过程
-            if (pagePos < numPages() - 1) {
+            if (pagePos < numPages()) {
                 pagePos++;
                 HeapPageId pid = new HeapPageId(getId(), pagePos);
                 tuplesInPage = getTuplesInPage(pid);

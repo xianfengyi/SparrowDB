@@ -337,21 +337,32 @@ public class HeapPage implements Page {
 
         return (byte) (target << (7 - posInByte)) < 0;
     }
-//    另一个方法：
-//    private static boolean isOne(byte target, int posInByte) {
-//        // 例如该byte是11111011,pos是2(也就是0那个bit的位置)
-//        // 那么只需先右移2位即可通过是否整除2来判断
-//        //
-//        return (target >> posInByte) % 2 == 1;
-//    }
-
 
     /**
      * Abstraction to fill or clear a slot on this page.
      */
     private void markSlotUsed(int i, boolean value) {
-        // some code goes here
-        // not necessary for lab1
+        int byteNum = i / 8;//计算在第几个字节
+        int posInByte = i % 8;//计算在该字节的第几位,从右往左算（这是因为JVM用big-ending）
+        header[byteNum] = editBitInByte(header[byteNum], posInByte, value);
+    }
+
+    /**
+     * 修改一个byte的指定位置的bit
+     *
+     * @param target    待修改的byte
+     * @param posInByte bit的位置在target的偏移量，从右往左且从0开始算，取值范围为0到7
+     * @param value     为true修改该bit为1,为false时修改为0
+     * @return 修改后的byte
+     */
+    private byte editBitInByte(byte target, int posInByte, boolean value) {
+        if (posInByte < 0 || posInByte > 7) {
+            throw new IllegalArgumentException();
+        }
+        byte b = (byte) (1 << posInByte);//将1这个bit移到指定位置，例如pos为3,value为true，将得到00001000
+        //如果value为1,使用字节00001000以及"|"操作可以将指定位置改为1，其他位置不变
+        //如果value为0,使用字节11110111以及"&"操作可以将指定位置改为0，其他位置不变
+        return value ? (byte) (target | b) : (byte) (target & ~b);
     }
 
     /**

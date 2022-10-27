@@ -1,5 +1,6 @@
 package com.pioneer.sparrowdb.storage;
 
+import com.pioneer.sparrowdb.storage.cache.PageLruCache;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
 import com.pioneer.sparrowdb.storage.file.heap.HeapFile;
 import com.pioneer.sparrowdb.storage.file.heap.HeapPage;
@@ -9,6 +10,7 @@ import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -42,6 +44,9 @@ public class BufferPool {
     public final int PAGES_NUM;
 
     //当前的缓存页
+    private PageLruCache lruPagesPool;
+
+    //当前的缓存页
     private HashMap<PageId, Page> pid2pages;
 
     /**
@@ -50,9 +55,8 @@ public class BufferPool {
      * @param numPages maximum number of pages in this buffer pool.
      */
     public BufferPool(int numPages) {
-        // some code goes here
-        // TODO: 17-5-23 implement this
         PAGES_NUM = numPages;
+        lruPagesPool = new PageLruCache(PAGES_NUM);
         pid2pages = new HashMap<>(PAGES_NUM);
     }
 
@@ -71,17 +75,24 @@ public class BufferPool {
      * @param pid  the ID of the requested page
      * @param perm the requested permissions on the page
      */
-    public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException, StorageException {
-        // some code goes here
-        // TODO: 17-5-26 怎么用tid和perm？？？？
-        if (pid2pages.containsKey(pid)) {//直接命中
-            return pid2pages.get(pid);
-        } else {//未命中，访问磁盘并缓存
-            HeapFile table = (HeapFile) Database.getCatalog().getDbFile(pid.getTableId());
-            HeapPage newPage = (HeapPage) table.readPage(pid);
-            addNewPage(pid, newPage);
-            return newPage;
+    public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException,
+            StorageException {
+        HeapPage page = (HeapPage) lruPagesPool.get(pid);
+        if (page != null) {//直接命中
+            return page;
         }
+        //未命中，访问磁盘并将其缓存
+        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(pid.getTableId());
+        HeapPage newPage = (HeapPage) table.readPage(pid);
+        Page removedPage = lruPagesPool.put(pid, newPage);
+        if (removedPage != null) {
+            try {
+                flushPage(removedPage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return newPage;
     }
 
     // TODO: 17-5-26 到时候在这里实现替换策略
@@ -175,8 +186,10 @@ public class BufferPool {
      * @param t   the tuple to add
      */
     public void deleteTuple(TransactionId tid, Tuple t) throws StorageException, TransactionAbortedException {
-        // some code goes here
-        // not necessary for proj1
+        int tableId = t.getRecordId().getPageId().getTableId();
+        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(tableId);
+        Page affectedPage = table.deleteTuple(tid, t);
+        affectedPage.markDirty(true, tid);
     }
 
     /**
@@ -185,8 +198,13 @@ public class BufferPool {
      * break simpledb if running in NO STEAL mode.
      */
     public synchronized void flushAllPages() throws IOException {
-        // some code goes here
-        // not necessary for proj1
+        Iterator<Page> it = lruPagesPool.iterator();
+        while (it.hasNext()) {
+            Page p = it.next();
+            if (p.isDirty() != null) {
+                flushPage(p);
+            }
+        }
 
     }
 
@@ -206,17 +224,27 @@ public class BufferPool {
      *
      * @param pid an ID indicating the page to flush
      */
-    private synchronized void flushPage(PageId pid) throws IOException {
-        // some code goes here
-        // not necessary for proj1
+    private synchronized void flushPage(Page page) throws IOException {
+        HeapPage dirty_page = (HeapPage) page;
+        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(page.getId().getTableId());
+        table.writePage(dirty_page);
+        dirty_page.markDirty(false, null);
     }
 
     /**
      * Write all pages of the specified transaction to disk.
      */
     public synchronized void flushPages(TransactionId tid) throws IOException {
-        // some code goes here
-        // not necessary for proj1
+        Iterator<Page> it = lruPagesPool.iterator();
+        while (it.hasNext()) {
+            Page p = it.next();
+            if (p.isDirty() != null && p.isDirty().equals(tid)) {
+                flushPage(p);
+                if (p.isDirty() == null) {
+                    p.setBeforeImage();
+                }
+            }
+        }
     }
 
     /**
