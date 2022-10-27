@@ -118,8 +118,20 @@ public class AstBuilder extends SparrowSQLBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitTable(SparrowSQLParser.TableContext context)
+    {
+        return new Table(getQualifiedName(context.qualifiedName()));
+    }
+
+    @Override
     public Node visitTableName(SparrowSQLParser.TableNameContext context) {
         return new Table(getQualifiedName(context.qualifiedName()));
+    }
+
+    @Override
+    public Node visitInlineTable(SparrowSQLParser.InlineTableContext context)
+    {
+        return new Values(visit(context.expression(), Expression.class));
     }
 
     @Override
@@ -294,6 +306,12 @@ public class AstBuilder extends SparrowSQLBaseVisitor<Node> {
                 (Identifier) visit(context.column),
                 context.EXISTS().stream().anyMatch(node -> node.getSymbol().getTokenIndex() < context.COLUMN().getSymbol().getTokenIndex()),
                 context.EXISTS().stream().anyMatch(node -> node.getSymbol().getTokenIndex() > context.COLUMN().getSymbol().getTokenIndex()));
+    }
+
+
+    @Override
+    public Node visitRowConstructor(SparrowSQLParser.RowConstructorContext context) {
+        return new Row( visit(context.expression(), Expression.class));
     }
 
     private <T> List<T> visit(List<? extends ParserRuleContext> contexts, Class<T> clazz) {

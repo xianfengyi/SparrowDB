@@ -56,8 +56,8 @@ public class SqlParserTest {
         String expected =
                 "CreateTable{name=states, elements=[ColumnDefinition{name=id, type=integer, nullable=true," + " " +
                         "properties=[], comment=Optional.empty}, ColumnDefinition{name=name, type=varchar(10), " +
-                        "nullable=true," + " properties=[], comment=Optional.empty}], notExists=false, properties=[]," +
-                        " comment=Optional.empty}";
+                        "nullable=true," + " properties=[], comment=Optional.empty}], notExists=false, properties=[],"
+                        + " comment=Optional.empty}";
         Assert.assertEquals(expected, statement.toString());
     }
 
@@ -73,7 +73,8 @@ public class SqlParserTest {
     public void testInsertData() {
         String sql = "insert into states(id,name) values(1,'pioneeer')";
         Statement statement = sqlParser.createStatement(sql);
-        String expected = "Insert{target=states, columns=Optional[[id, name]], query=Query{orderBy=Optional.empty}}";
+        String expected = "Insert{target=states, columns=Optional[[id, name]], query=Query{queryBody=([1, pioneeer])," +
+                " orderBy=Optional.empty}}";
         Assert.assertEquals(expected, statement.toString());
     }
 
