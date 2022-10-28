@@ -2,11 +2,12 @@ package com.pioneer.sparrowdb.executor;
 
 
 import com.pioneer.sparrowdb.planner.LogicalPlanner;
+import com.pioneer.sparrowdb.planner.plan.CreateNode;
+import com.pioneer.sparrowdb.planner.plan.DeleteNode;
 import com.pioneer.sparrowdb.planner.plan.InsertNode;
 import com.pioneer.sparrowdb.planner.plan.PlanNode;
 import com.pioneer.sparrowdb.sqlparser.parser.SqlParser;
 import com.pioneer.sparrowdb.sqlparser.tree.Delete;
-import com.pioneer.sparrowdb.sqlparser.tree.Insert;
 import com.pioneer.sparrowdb.sqlparser.tree.Query;
 import com.pioneer.sparrowdb.sqlparser.tree.Statement;
 import com.pioneer.sparrowdb.storage.Tuple;
@@ -25,13 +26,13 @@ public class SqlExecutor {
         SqlParser sqlParser = new SqlParser();
         Statement statement = sqlParser.createStatement(sql);
         TransactionId transactionId = new TransactionId();
-        PlanNode planNode = logicalPlanner.planStatement(statement,transactionId);
-        if (planNode ==null){
+        PlanNode planNode = logicalPlanner.planStatement(statement, transactionId);
+        if (planNode == null) {
             return;
         }
         if (statement instanceof Query) {
             doExecuteQuery(planNode);
-        } else{
+        } else {
             doExecuteNonQuery(planNode);
         }
     }
@@ -58,10 +59,18 @@ public class SqlExecutor {
         System.out.println(String.join(" ", columnNames));
     }
 
-    private void doExecuteNonQuery(PlanNode planNode)  {
-        InsertNode insertNode = (InsertNode) planNode;
+    private void doExecuteNonQuery(PlanNode planNode) {
         try {
-            insertNode.execute();
+            if (planNode instanceof InsertNode){
+                InsertNode insertNode = (InsertNode) planNode;
+                insertNode.execute();
+            }else if(planNode instanceof DeleteNode){
+                DeleteNode insertNode = (DeleteNode) planNode;
+                insertNode.execute();
+            }else if(planNode instanceof CreateNode){
+                CreateNode createNode = (CreateNode) planNode;
+                createNode.execute();
+            }
         } catch (TransactionAbortedException e) {
             throw new RuntimeException(e);
         }

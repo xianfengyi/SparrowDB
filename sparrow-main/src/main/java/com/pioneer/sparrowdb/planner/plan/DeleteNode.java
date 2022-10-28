@@ -8,20 +8,21 @@ import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
 public class DeleteNode extends PlanNode {
 
-    private TransactionId tid;
+    private TransactionId transactionId;
 
     private DbIterator dbIterator;
 
     private int deleteCount;
 
-    public DeleteNode(DbIterator dbIterator) {
+    public DeleteNode(DbIterator dbIterator, TransactionId tid) {
         this.dbIterator = dbIterator;
+        this.transactionId = tid;
     }
 
     public void execute() throws TransactionAbortedException {
         while (dbIterator.hasNext()) {
             Tuple next = dbIterator.next();
-            Database.getBufferPool().deleteTuple(tid, next);
+            Database.getBufferPool().deleteTuple(transactionId, next);
             deleteCount++;
         }
     }

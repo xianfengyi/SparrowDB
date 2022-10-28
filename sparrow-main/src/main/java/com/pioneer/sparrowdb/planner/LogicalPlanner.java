@@ -4,8 +4,10 @@ import com.pioneer.sparrowdb.planner.plan.*;
 import com.pioneer.sparrowdb.sqlparser.tree.*;
 import com.pioneer.sparrowdb.sqlparser.tree.literal.LongLiteral;
 import com.pioneer.sparrowdb.storage.*;
+import com.pioneer.sparrowdb.storage.model.DbTable;
 import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -19,8 +21,20 @@ public class LogicalPlanner {
             return createDeletePlan((Delete) statement, transactionId);
         } else if (statement instanceof Query) {
             return createQueryPlan((Query) statement, transactionId);
+        } else if (statement instanceof CreateTable) {
+            return createTablePlan((CreateTable) statement, transactionId);
         }
         throw new RuntimeException("not support this statement plan");
+    }
+
+    private PlanNode createTablePlan(CreateTable statement, TransactionId transactionId) {
+        String tableName = statement.getName().toString();
+        List<DbTable.Column> columns = new ArrayList<>();
+        for (TableElement element : statement.getElements()) {
+            ColumnDefinition columnDefinition = (ColumnDefinition) element;
+            columns.add(new DbTable.Column(columnDefinition.getName().getValue(), columnDefinition.getType()));
+        }
+        return new CreateNode(new DbTable(tableName,columns));
     }
 
     private PlanNode createQueryPlan(Query statement, TransactionId transactionId) {
@@ -42,6 +56,10 @@ public class LogicalPlanner {
 
     private PlanNode getTableScanNode(Optional<Relation> relation, TransactionId transactionId) {
         Table table = (Table) relation.get();
+        return getTableScanNode(table, transactionId);
+    }
+
+    private PlanNode getTableScanNode(Table table, TransactionId transactionId) {
         return new TableScanNode(1, table.getName().toString(), transactionId);
     }
 
@@ -77,7 +95,24 @@ public class LogicalPlanner {
     }
 
     private PlanNode createDeletePlan(Delete statement, TransactionId transactionId) {
-        return null;
+        int tableId = 1;
+        TupleDesc tupleDesc = Database.getCatalog().getTupleDesc(tableId);
+
+        Table table = statement.getTable();
+        Optional<Expression> where = statement.getWhere();
+
+        PlanNode root = getTableScanNode(table, transactionId);
+        root = getWhereNode(root, where);
+        List<Tuple> tuples = new ArrayList<>();
+        while (true) {
+            Tuple tuple = root.getNextTuple();
+            if (tuple == null) {
+                break;
+            }
+            tuples.add(tuple);
+        }
+        TupleIterator tupleIterator = new TupleIterator(tupleDesc, tuples);
+        return new DeleteNode(tupleIterator, transactionId);
     }
 
     private PlanNode createInsertPlan(Insert statement, TransactionId transactionId) {

@@ -14,8 +14,54 @@ import java.io.IOException;
 
 public class SqlExecutorTest {
 
-    @Before
-    public void setUp() throws Exception {
+    @Test
+    public void testSelect() {
+        setUp();
+        String sql = "select field0,field1,field2 from test";
+
+        SqlExecutor executor = new SqlExecutor();
+        executor.execute(sql);
+    }
+
+    @Test
+    public void testInsert() {
+        setUp();
+        SqlExecutor executor = new SqlExecutor();
+
+        String insertSql = "insert into test(field0,field1,field2)values(6,6,6)";
+        executor.execute(insertSql);
+
+        String selectSql = "select field0,field1,field2 from test";
+        executor.execute(selectSql);
+    }
+
+    @Test
+    public void deleteInsert() {
+        setUp();
+        SqlExecutor executor = new SqlExecutor();
+
+        String deleteSql = "delete from test where field0=11";
+        executor.execute(deleteSql);
+
+        String selectSql = "select field0,field1,field2 from test";
+        executor.execute(selectSql);
+    }
+
+
+    @Test
+    public void testCreateTable(){
+        SqlExecutor executor = new SqlExecutor();
+        String createSql = "create table test(id integer,age integer)";
+        executor.execute(createSql);
+
+        String insertSql = "insert into test(id,age)values(1,10)";
+        executor.execute(insertSql);
+
+        String selectSql = "select id,age from test";
+        executor.execute(selectSql);
+    }
+
+    private void setUp() {
         String filePath = SqlExecutorTest.class.getClassLoader().getResource("data/some_data_file.txt").getPath();
         int columnNum = 3;
         char fieldSeparator = ',';
@@ -42,25 +88,6 @@ public class SqlExecutorTest {
         String datFilePath = SqlExecutorTest.class.getClassLoader().getResource("data/some_data_file.dat").getPath();
         HeapFile table1 = new HeapFile(new File(datFilePath), descriptor);
         Database.getCatalog().addTable(table1, "test");
-    }
-
-    @Test
-    public void testSelect() {
-        String sql = "select field0,field1,field2 from test";
-
-        SqlExecutor executor = new SqlExecutor();
-        executor.execute(sql);
-    }
-
-    @Test
-    public void testInsert() {
-        SqlExecutor executor = new SqlExecutor();
-
-        String insertSql = "insert into test(field0,field1,field2)values(6,6,6)";
-        executor.execute(insertSql);
-
-        String selectSql = "select field0,field1,field2 from test";
-        executor.execute(selectSql);
     }
 
 }
