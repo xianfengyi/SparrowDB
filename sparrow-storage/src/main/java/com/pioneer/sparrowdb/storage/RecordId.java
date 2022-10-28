@@ -10,7 +10,7 @@ public class RecordId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private PageId pageId;
+    private PageID pageId;
 
     private int tupleNum;
 
@@ -21,7 +21,7 @@ public class RecordId implements Serializable {
      * @param pid     the pageid of the page on which the tuple resides
      * @param tupleno the tuple number within the page.
      */
-    public RecordId(PageId pid, int tupleno) {
+    public RecordId(PageID pid, int tupleno) {
         // some code goes here
         pageId = pid;
         tupleNum = tupleno;
@@ -38,7 +38,7 @@ public class RecordId implements Serializable {
     /**
      * @return the page id this RecordId references.
      */
-    public PageId getPageId() {
+    public PageID getPageId() {
         // some code goes here
         return pageId;
     }

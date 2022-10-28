@@ -21,7 +21,7 @@ public interface Page {
      *
      * @return the id of this page
      */
-    public PageId getId();
+    public PageID getId();
 
     /**
      * Get the id of the transaction that last dirtied this page, or null if the page is clean..

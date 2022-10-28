@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * @author Sam Madden
  * @see HeapPage#HeapPage
  */
-public class HeapFile implements DbFile {
+public class HeapFile implements TableFile {
 
     private TupleDesc tupleDesc;
 
@@ -87,7 +87,7 @@ public class HeapFile implements DbFile {
      * @return 读取得到的Page
      * @throws IllegalArgumentException
      */
-    public Page readPage(PageId pid) throws IllegalArgumentException {
+    public Page readPage(PageID pid) throws IllegalArgumentException {
         // some code goes here
         Page page = null;
         byte[] data = new byte[BufferPool.PAGE_SIZE];
@@ -156,7 +156,7 @@ public class HeapFile implements DbFile {
 
     // see DbFile.java for javadocs
     public Page deleteTuple(TransactionId tid, Tuple t) throws StorageException, TransactionAbortedException {
-        PageId pid = t.getRecordId().getPageId();
+        PageID pid = t.getRecordId().getPageId();
         HeapPage affectedPage = null;
         for (int i = 0; i < numPages(); i++) {
             if (i == pid.pageNumber()) {

@@ -19,7 +19,7 @@ import java.util.*;
 public class Catalog {
 
     //建立tableid到DbFiles的映射
-    private HashMap<Integer, DbFile> id2file;
+    private HashMap<Integer, TableFile> id2file;
 
     //建立tableid到表的主键的映射
     private HashMap<Integer, String> id2pkey;
@@ -52,7 +52,7 @@ public class Catalog {
      *                  conflict exists, use the last table to be added as the table for a given name.
      * @param pkeyField the name of the primary key field
      */
-    public void addTable(DbFile file, String name, String pkeyField) {
+    public void addTable(TableFile file, String name, String pkeyField) {
         // some code goes here
         if (name == null || pkeyField == null) {
             throw new IllegalArgumentException();
@@ -72,7 +72,7 @@ public class Catalog {
         name2id.put(name, tableid);
     }
 
-    public void addTable(DbFile file, String name) {
+    public void addTable(TableFile file, String name) {
         addTable(file, name, "");
     }
 
@@ -84,7 +84,7 @@ public class Catalog {
      * @param file the contents of the table to add;  file.getId() is the identfier of
      *             this file/tupledesc param for the calls getTupleDesc and getFile
      */
-    public void addTable(DbFile file) {
+    public void addTable(TableFile file) {
         addTable(file, (UUID.randomUUID()).toString());
     }
 
@@ -123,7 +123,7 @@ public class Catalog {
      * @param tableid The id of the table, as specified by the DbFile.getId()
      *                function passed to addTable
      */
-    public DbFile getDbFile(int tableid) throws NoSuchElementException {
+    public TableFile getDbFile(int tableid) throws NoSuchElementException {
         // some code goes here
         if (!isIdValid(tableid, id2file)) {
             throw new NoSuchElementException();

@@ -1,11 +1,11 @@
 package com.pioneer.sparrowdb.storage.file.heap;
 
-import com.pioneer.sparrowdb.storage.PageId;
+import com.pioneer.sparrowdb.storage.PageID;
 
 /**
  * Unique identifier for HeapPage objects.
  */
-public class HeapPageId implements PageId {
+public class HeapPageId implements PageID {
 
     private int tableId;
 
@@ -65,8 +65,8 @@ public class HeapPageId implements PageId {
         if (o == this) {
             return true;
         }
-        if (o instanceof PageId) {
-            PageId another = (PageId) o;
+        if (o instanceof PageID) {
+            PageID another = (PageID) o;
             return this.pageNum == another.pageNumber()
                     && this.tableId == another.getTableId();
         } else return false;

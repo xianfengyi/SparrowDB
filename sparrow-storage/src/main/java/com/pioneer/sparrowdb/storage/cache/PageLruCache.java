@@ -2,18 +2,18 @@ package com.pioneer.sparrowdb.storage.cache;
 
 import com.pioneer.sparrowdb.storage.Database;
 import com.pioneer.sparrowdb.storage.Page;
-import com.pioneer.sparrowdb.storage.PageId;
+import com.pioneer.sparrowdb.storage.PageID;
 import com.pioneer.sparrowdb.storage.exception.CacheException;
 import com.pioneer.sparrowdb.storage.file.heap.HeapFile;
 import com.pioneer.sparrowdb.storage.file.heap.HeapPage;
 
-public class PageLruCache extends LruCache<PageId, Page> {
+public class PageLruCache extends LruCache<PageID, Page> {
     public PageLruCache(int capacity) {
         super(capacity);
     }
 
     @Override
-    public synchronized Page put(PageId key, Page value) throws CacheException {
+    public synchronized Page put(PageID key, Page value) throws CacheException {
         if (key == null | value == null) {//不允许插入null值
             throw new IllegalArgumentException();
         }
@@ -56,7 +56,7 @@ public class PageLruCache extends LruCache<PageId, Page> {
      *
      * @param pid
      */
-    private synchronized void removePage(PageId pid) {
+    private synchronized void removePage(PageID pid) {
         if (!isCached(pid)) {
             throw new IllegalArgumentException();
         }
@@ -76,7 +76,7 @@ public class PageLruCache extends LruCache<PageId, Page> {
      *
      * @param pid
      */
-    public synchronized void reCachePage(PageId pid) {
+    public synchronized void reCachePage(PageID pid) {
         if (!isCached(pid)) {
             throw new IllegalArgumentException();
         }

@@ -23,10 +23,6 @@ import java.util.Iterator;
  */
 // TODO: 17-5-23 未完成
 public class BufferPool {
-    //这个类没有设计为单例类，是因为作者认为：
-    // The Database class provides a static method, Database.getBufferPool(),
-    // that returns a reference to the single BufferPool instance for the entire SimpleDB process
-    //但是我还是觉得应该设计为单例类
 
     /**
      * Bytes per page, including header.
@@ -47,7 +43,7 @@ public class BufferPool {
     private PageLruCache lruPagesPool;
 
     //当前的缓存页
-    private HashMap<PageId, Page> pid2pages;
+    private HashMap<PageID, Page> pid2pages;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -75,7 +71,7 @@ public class BufferPool {
      * @param pid  the ID of the requested page
      * @param perm the requested permissions on the page
      */
-    public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException,
+    public Page getPage(TransactionId tid, PageID pid, Permissions perm) throws TransactionAbortedException,
             StorageException {
         HeapPage page = (HeapPage) lruPagesPool.get(pid);
         if (page != null) {//直接命中
@@ -96,7 +92,7 @@ public class BufferPool {
     }
 
     // TODO: 17-5-26 到时候在这里实现替换策略
-    private void addNewPage(PageId pid, Page newPage) {
+    private void addNewPage(PageID pid, Page newPage) {
         pid2pages.put(pid, newPage);
         //如果超出了最大的缓存页数量
         if (pid2pages.size() > PAGES_NUM) {
@@ -113,7 +109,7 @@ public class BufferPool {
      * @param tid the ID of the transaction requesting the unlock
      * @param pid the ID of the page to unlock
      */
-    public void releasePage(TransactionId tid, PageId pid) {
+    public void releasePage(TransactionId tid, PageID pid) {
         // some code goes here
         // not necessary for proj1
     }
@@ -131,7 +127,7 @@ public class BufferPool {
     /**
      * Return true if the specified transaction has a lock on the specified page
      */
-    public boolean holdsLock(TransactionId tid, PageId p) {
+    public boolean holdsLock(TransactionId tid, PageID p) {
         // some code goes here
         // not necessary for proj1
         return false;
@@ -214,7 +210,7 @@ public class BufferPool {
      * buffer pool doesn't keep a rolled back page in its
      * cache.
      */
-    public synchronized void discardPage(PageId pid) {
+    public synchronized void discardPage(PageID pid) {
         // some code goes here
         // not necessary for proj1
     }

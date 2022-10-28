@@ -225,7 +225,7 @@ public class LogFile {
     }
 
     void writePageData(RandomAccessFile raf, Page p) throws IOException{
-        PageId pid = p.getId();
+        PageID pid = p.getId();
         int pageInfo[] = pid.serialize();
 
         //page data is:
@@ -253,7 +253,7 @@ public class LogFile {
     }
 
     Page readPageData(RandomAccessFile raf) throws IOException {
-        PageId pid;
+        PageID pid;
         Page newPage = null;
 
         String pageClassName = raf.readUTF();
@@ -269,7 +269,7 @@ public class LogFile {
             for (int i = 0; i<numIdArgs;i++) {
                 idArgs[i] = new Integer(raf.readInt());
             }
-            pid = (PageId)idConsts[0].newInstance(idArgs);
+            pid = (PageID)idConsts[0].newInstance(idArgs);
 
             Constructor<?>[] pageConsts = pageClass.getDeclaredConstructors();
             int pageSize = raf.readInt();

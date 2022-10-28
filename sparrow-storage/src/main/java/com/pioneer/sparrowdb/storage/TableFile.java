@@ -10,41 +10,34 @@ import java.util.ArrayList;
 
 /**
  * The interface for database files on disk. Each table is represented by a
- * single DbFile. DbFiles can fetch pages and iterate through tuples. Each
- * file has a unique id used to store metadata about the table in the Catalog.
- * DbFiles are generally accessed through the buffer pool, rather than directly
- * by operators.
+ * single TableFile.
  */
-public interface DbFile extends Serializable {
+public interface TableFile extends Serializable {
+
+    /**
+     * Returns the TupleDesc of the table stored in this TableFile.
+     *
+     * @return TupleDesc of this DbFile.
+     */
+    TupleDesc getTupleDesc();
+
     /**
      * Read the specified page from disk.
      *
-     * @throws IllegalArgumentException if the page does not exist in this file.
+     * @throws StorageException if read page fail
      */
-    Page readPage(PageId id) throws IllegalArgumentException;
+    Page readPage(PageID id) throws StorageException;
 
     /**
      * Push the specified page to disk.
      *
-     * @param p The page to write.  page.getId().pageno() specifies the offset into the file where the page should be
-     *         written.
-     * @throws IOException if the write fails
+     * @param page The page to write.  page.getId().pageno() specifies the offset into the file where the page should be
+     *             written.
+     * @throws StorageException if the write fails
      */
-    void writePage(Page p) throws IOException;
+    void writePage(Page page) throws StorageException;
 
-    /**
-     * Inserts the specified tuple to the file on behalf of transaction.
-     * This method will acquire a lock on the affected pages of the file, and
-     * may block until the lock can be acquired.
-     *
-     * @param tid The transaction performing the update
-     * @param t   The tuple to add.  This tuple should be updated to reflect that
-     *            it is now stored in this file.
-     * @return An ArrayList contain the pages that were modified
-     * @throws StorageException if the tuple cannot be added
-     * @throws IOException if the needed file can't be read/written
-     */
-    ArrayList<Page> insertTuple(TransactionId tid, Tuple t) throws StorageException, IOException, TransactionAbortedException;
+     Page insertTuple(TransactionId tid, Tuple t) throws StorageException
 
     /**
      * Removes the specifed tuple from the file on behalf of the specified
@@ -53,7 +46,7 @@ public interface DbFile extends Serializable {
      * may block until the lock can be acquired.
      *
      * @throws StorageException if the tuple cannot be deleted or is not a member
-     *                     of the file
+     *                          of the file
      */
     Page deleteTuple(TransactionId tid, Tuple t) throws StorageException, TransactionAbortedException;
 
@@ -80,11 +73,4 @@ public interface DbFile extends Serializable {
      * @return an ID uniquely identifying this HeapFile.
      */
     int getId();
-
-    /**
-     * Returns the TupleDesc of the table stored in this DbFile.
-     *
-     * @return TupleDesc of this DbFile.
-     */
-    TupleDesc getTupleDesc();
 }
