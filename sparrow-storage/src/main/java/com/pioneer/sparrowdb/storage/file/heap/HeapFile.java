@@ -9,19 +9,16 @@ import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * HeapFile is an implementation of a DbFile that stores a collection of tuples
- * in no particular order. Tuples are stored on pages, each of which is a fixed
- * size, and the file is simply a collection of those pages. HeapFile works
- * closely with HeapPage. The format of HeapPages is described in the HeapPage
- * constructor.
+ * HeapFile is an implementation of a TableFile that stores a collection of tuples in no particular order.
+ * Tuples are stored on pages, each of which is a fixed size, and the file is simply a collection of those pages.
  *
- * @author Sam Madden
- * @see HeapPage#HeapPage
+ * <p>
+ * HeapFile works closely with HeapPage. The format of HeapPages is described in the HeapPage constructor.
+ * </p>
  */
 public class HeapFile implements TableFile {
 
@@ -29,162 +26,95 @@ public class HeapFile implements TableFile {
 
     private File file;
 
-    private int numPage;
-
-    /**
-     * Constructs a heap file backed by the specified file.
-     *
-     * @param f the file that stores the on-disk backing store for this heap
-     *          file.
-     */
-    public HeapFile(File f, TupleDesc td) {
-        // some code goes here
-        file = f;
-        numPage = (int) (file.length() / BufferPool.PAGE_SIZE);
-        tupleDesc = td;
+    public HeapFile(File file, TupleDesc tupleDesc) {
+        this.file = file;
+        this.tupleDesc = tupleDesc;
     }
 
-    /**
-     * Returns the File backing this HeapFile on disk.
-     *
-     * @return the File backing this HeapFile on disk.
-     */
-    public File getFile() {
-        // some code goes here
-        return file;
+    @Override
+    public int getTableId() {
+        return this.file.getAbsoluteFile().hashCode();
     }
 
-    /**
-     * Returns an ID uniquely identifying this HeapFile. Implementation note:
-     * you will need to generate this tableid somewhere ensure that each
-     * HeapFile has a "unique id," and that you always return the same value for
-     * a particular HeapFile. We suggest hashing the absolute file name of the
-     * file underlying the heapfile, i.e. f.getAbsoluteFile().hashCode().
-     *
-     * @return an ID uniquely identifying this HeapFile.
-     */
-    public int getId() {
-        // some code goes here
-        //return file.getAbsoluteFile().hashCode();
-        return 1;
-    }
-
-    /**
-     * Returns the TupleDesc of the table stored in this DbFile.
-     *
-     * @return TupleDesc of this DbFile.
-     */
+    @Override
     public TupleDesc getTupleDesc() {
-        // some code goes here
         return tupleDesc;
     }
 
-    /**
-     * 根据PageId从磁盘读取一个页，注意此方法只应该在BufferPool类被直接调用
-     * 在其他需要page的地方需要通过BufferPool访问。这样才能实现缓存功能
-     *
-     * @param pid
-     * @return 读取得到的Page
-     * @throws IllegalArgumentException
-     */
-    public Page readPage(PageID pid) throws IllegalArgumentException {
-        // some code goes here
+    @Override
+    public Page readPage(PageID pageID) throws StorageException {
         Page page = null;
         byte[] data = new byte[BufferPool.PAGE_SIZE];
 
-        try (RandomAccessFile raf = new RandomAccessFile(getFile(), "r")) {
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             // page在HeapFile的偏移量
-            int pos = pid.pageNumber() * BufferPool.PAGE_SIZE;
+            int pos = pageID.pageNumber() * BufferPool.PAGE_SIZE;
             raf.seek(pos);
             raf.read(data, 0, data.length);
-            page = new HeapPage((HeapPageId) pid, data);
+            page = new HeapPage((HeapPageId) pageID, data);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new StorageException(e);
         }
         return page;
     }
 
-
-    // see DbFile.java for javadocs
-    public void writePage(Page page) throws IOException {
+    @Override
+    public void writePage(Page page) throws StorageException {
         try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
             raf.seek(page.getId().pageNumber() * BufferPool.PAGE_SIZE);
             byte[] data = page.getPageData();
             raf.write(data);
+        } catch (IOException exp) {
+            throw new StorageException(exp);
         }
     }
 
-    /**
-     * Returns the number of pages in this HeapFile.
-     */
-    public int numPages() {
-        // some code goes here
-        return numPage;
+    @Override
+    public Page insertTuple(TransactionId transactionId, Tuple tuple) throws StorageException {
+        int curPageCount = this.getPageCount();
+        HeapPage heapPage = null;
+        if (curPageCount == 0) {
+            PageID pageID = new HeapPageId(this.getTableId(), 0);
+            heapPage = new HeapPage(new HeapPageId(this.getTableId(), pageID.pageNumber()),
+                    HeapPage.createEmptyPageData());
+            writePage(heapPage);
+            heapPage = (HeapPage) Database.getBufferPool().getPage(transactionId, pageID);
+        } else {
+            heapPage = (HeapPage) getFirstPageHasEmptySlot(transactionId, curPageCount);
+        }
+        heapPage.insertTuple(tuple);
+        return heapPage;
     }
 
-    // see DbFile.java for javadocs
-    public ArrayList<Page> insertTuple(TransactionId tid, Tuple t) throws StorageException, IOException,
-            TransactionAbortedException {
-        ArrayList<Page> affectedPages = new ArrayList<>();
-        for (int i = 0; i < numPages(); i++) {
-            HeapPageId pid = new HeapPageId(getId(), i);
-            HeapPage page = null;
-            page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
-            if (page.getNumEmptySlots() != 0) {
-                //page的insertTuple已经负责修改tuple信息来表明其存储在该page上
-                page.insertTuple(t);
-                page.markDirty(true, tid);
-                affectedPages.add(page);
-                break;
-            }
-        }
-        if (affectedPages.size() == 0) {//说明page都已经满了
-            HeapPageId npid = new HeapPageId(getId(), numPages());
-            HeapPage blankPage = new HeapPage(npid, HeapPage.createEmptyPageData());
-            numPage++;
-            //将其写入磁盘
-            writePage(blankPage);
-            //通过BufferPool来访问该新的page
-            HeapPage newPage = null;
-            newPage = (HeapPage) Database.getBufferPool().getPage(tid, npid, Permissions.READ_WRITE);
-            newPage.insertTuple(t);
-            newPage.markDirty(true, tid);
-            affectedPages.add(newPage);
-        }
-        return affectedPages;
+    @Override
+    public Page deleteTuple(TransactionId tid, Tuple tuple) throws StorageException {
+        PageID pid = tuple.getRecordId().getPageId();
+        HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid);
+        page.deleteTuple(tuple);
+        return page;
     }
 
-    // see DbFile.java for javadocs
-    public Page deleteTuple(TransactionId tid, Tuple t) throws StorageException, TransactionAbortedException {
-        PageID pid = t.getRecordId().getPageId();
-        HeapPage affectedPage = null;
-        for (int i = 0; i < numPages(); i++) {
-            if (i == pid.pageNumber()) {
-                affectedPage = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
-                affectedPage.deleteTuple(t);
-                affectedPage.markDirty(true, tid);
-            }
-        }
-        if (affectedPage == null) {
-            throw new StorageException("tuple " + t + " is not in this table");
-        }
-        return affectedPage;
-    }
-
-    // see DbFile.java for javadocs
-    public DbFileIterator iterator(TransactionId tid) {
-        // some code goes here
+    @Override
+    public TableFileIterator iterator(TransactionId tid) {
         return new HeapFileIterator(tid);
     }
 
-    /**
-     * 这个类在实现时有不少疑惑，参考了别人的代码才清楚以下一些点：
-     * 1.tableid就是heapfile的id，即通过getId。。但是这个不是从0开始的，按照课程源码推荐，这是文件的哈希码。。
-     * 2.PageId是从0开始的。。。(哪里说了，这个可以默认的么，谁知道这个作业的设计是不是从0开始。。。)
-     * 3.transactionId哪里来的让我非常困惑，现在知道不用理，反正iterator方法的调用者会提供，应该是以后章节的内容
-     * 4.我觉得别人的一个想法挺好，就是存储一个当前正在遍历的页的tuples迭代器的引用，这样一页一页来遍历
-     */
-    private class HeapFileIterator implements DbFileIterator {
+    private int getPageCount() {
+        return (int) file.length() / BufferPool.PAGE_SIZE;
+    }
+
+    private Page getFirstPageHasEmptySlot(TransactionId tid, int curPageCount) {
+        for (int pageNo = 0; pageNo < curPageCount; pageNo++) {
+            HeapPage heapPage = (HeapPage) Database.getBufferPool().getPage(tid, new HeapPageId(this.getTableId(),
+                    pageNo));
+            if (heapPage.getNumEmptySlots() != 0) {
+                return heapPage;
+            }
+        }
+        return null;
+    }
+
+    private class HeapFileIterator implements TableFileIterator {
 
         private int pagePos;
 
@@ -196,38 +126,30 @@ public class HeapFile implements TableFile {
             this.tid = tid;
         }
 
-        public Iterator<Tuple> getTuplesInPage(HeapPageId pid) throws TransactionAbortedException, StorageException {
-            // 不能直接使用HeapFile的readPage方法，而是通过BufferPool来获得page，理由见readPage()方法的Javadoc
-            HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_ONLY);
+        public Iterator<Tuple> getTuplesInPage(HeapPageId pid) throws StorageException {
+            HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid);
             return page.iterator();
         }
 
         @Override
         public void open() throws StorageException, TransactionAbortedException {
             pagePos = 0;
-            HeapPageId pid = new HeapPageId(getId(), pagePos);
-            //加载第一页的tuples
+            HeapPageId pid = new HeapPageId(getTableId(), pagePos);
             tuplesInPage = getTuplesInPage(pid);
         }
 
         @Override
         public boolean hasNext() throws StorageException, TransactionAbortedException {
             if (tuplesInPage == null) {
-                //说明已经被关闭
                 return false;
             }
-            //如果当前页还有tuple未遍历
             if (tuplesInPage.hasNext()) {
                 return true;
             }
-            //如果遍历完当前页，测试是否还有页未遍历
-            //注意要减一，这里与for循环的一般判断逻辑（迭代变量<长度）不同，是因为我们要在接下来代码中将pagePos加1才使用
-            //如果不理解，可以自己举一个例子想象运行过程
-            if (pagePos < numPages()) {
+            if (pagePos < getPageCount()) {
                 pagePos++;
-                HeapPageId pid = new HeapPageId(getId(), pagePos);
+                HeapPageId pid = new HeapPageId(getTableId(), pagePos);
                 tuplesInPage = getTuplesInPage(pid);
-                //这时不能直接return ture，有可能返回的新的迭代器是不含有tuple的
                 return tuplesInPage.hasNext();
             } else return false;
         }
@@ -242,7 +164,6 @@ public class HeapFile implements TableFile {
 
         @Override
         public void rewind() throws StorageException, TransactionAbortedException {
-            //直接初始化一次。。。。。
             open();
         }
 

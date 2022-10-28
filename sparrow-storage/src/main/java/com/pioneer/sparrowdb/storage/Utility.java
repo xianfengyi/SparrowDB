@@ -116,7 +116,7 @@ public class Utility {
         fos.close();
 
         HeapFile hf = openHeapFile(cols, f);
-        HeapPageId pid = new HeapPageId(hf.getId(), 0);
+        HeapPageId pid = new HeapPageId(hf.getTableId(), 0);
 
         HeapPage page = null;
         try {

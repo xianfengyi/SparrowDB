@@ -21,7 +21,7 @@ public class SeqScan implements DbIterator {
 
     private String tableAlias;
 
-    private DbFileIterator tupleIterator;
+    private TableFileIterator tupleIterator;
 
     /**
      * Creates a sequential scan over the specified table as a part of the

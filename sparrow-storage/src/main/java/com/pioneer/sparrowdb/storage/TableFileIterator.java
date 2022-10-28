@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
  * DbFileIterator is the iterator interface that all SimpleDB Dbfile should
  * implement.
  */
-public interface DbFileIterator extends Serializable {
+public interface TableFileIterator extends Serializable {
     /**
      * Opens the iterator
      *

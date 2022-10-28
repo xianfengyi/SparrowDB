@@ -57,7 +57,7 @@ public class Catalog {
         if (name == null || pkeyField == null) {
             throw new IllegalArgumentException();
         }
-        int tableid = file.getId();
+        int tableid = file.getTableId();
         if (name2id.containsKey(name)) {
             //当表名冲突时，删除之前的插入的表
             int id = name2id.get(name);

@@ -67,12 +67,10 @@ public class BufferPool {
      * space in the buffer pool, an page should be evicted and the new page
      * should be added in its place.
      *
-     * @param tid  the ID of the transaction requesting the page
-     * @param pid  the ID of the requested page
-     * @param perm the requested permissions on the page
+     * @param tid the ID of the transaction requesting the page
+     * @param pid the ID of the requested page
      */
-    public Page getPage(TransactionId tid, PageID pid, Permissions perm) throws TransactionAbortedException,
-            StorageException {
+    public Page getPage(TransactionId tid, PageID pid) throws StorageException {
         HeapPage page = (HeapPage) lruPagesPool.get(pid);
         if (page != null) {//直接命中
             return page;
@@ -162,10 +160,8 @@ public class BufferPool {
     public void insertTuple(TransactionId tid, int tableId, Tuple t) throws StorageException, IOException,
             TransactionAbortedException {
         HeapFile table = (HeapFile) Database.getCatalog().getDbFile(tableId);
-        ArrayList<Page> affectedPages = table.insertTuple(tid, t);
-        for (Page page : affectedPages) {
-            page.markDirty(true, tid);
-        }
+        Page page = table.insertTuple(tid, t);
+        page.markDirty(true, tid);
     }
 
     /**
@@ -218,7 +214,7 @@ public class BufferPool {
     /**
      * Flushes a certain page to disk
      *
-     * @param pid an ID indicating the page to flush
+     * @param page an ID indicating the page to flush
      */
     private synchronized void flushPage(Page page) throws IOException {
         HeapPage dirty_page = (HeapPage) page;
