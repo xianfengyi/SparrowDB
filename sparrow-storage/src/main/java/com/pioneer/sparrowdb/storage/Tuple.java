@@ -32,6 +32,10 @@ public class Tuple implements Serializable {
         fields = new Field[td.numFields()];
     }
 
+    public Field[] getFields() {
+        return fields;
+    }
+
     /**
      * @return The TupleDesc representing the schema of this tuple.
      */

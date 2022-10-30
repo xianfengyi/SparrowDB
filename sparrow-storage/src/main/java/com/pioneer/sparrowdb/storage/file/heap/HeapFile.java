@@ -62,7 +62,7 @@ public class HeapFile implements TableFile {
     public void writePage(Page page) throws StorageException {
         try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
             raf.seek(page.getId().pageNumber() * BufferPool.PAGE_SIZE);
-            byte[] data = page.getPageData();
+            byte[] data = page.serialize();
             raf.write(data);
         } catch (IOException exp) {
             throw new StorageException(exp);
@@ -105,9 +105,9 @@ public class HeapFile implements TableFile {
 
     private Page getFirstPageHasEmptySlot(TransactionId tid, int curPageCount) {
         for (int pageNo = 0; pageNo < curPageCount; pageNo++) {
-            HeapPage heapPage = (HeapPage) Database.getBufferPool().getPage(tid, new HeapPageId(this.getTableId(),
-                    pageNo));
-            if (heapPage.getNumEmptySlots() != 0) {
+            HeapPageId heapPageId = new HeapPageId(this.getTableId(), pageNo);
+            HeapPage heapPage = (HeapPage) Database.getBufferPool().getPage(tid, heapPageId);
+            if (heapPage.hasEmptySlot()) {
                 return heapPage;
             }
         }
@@ -128,7 +128,7 @@ public class HeapFile implements TableFile {
 
         public Iterator<Tuple> getTuplesInPage(HeapPageId pid) throws StorageException {
             HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid);
-            return page.iterator();
+            return page.tupleIterator();
         }
 
         @Override

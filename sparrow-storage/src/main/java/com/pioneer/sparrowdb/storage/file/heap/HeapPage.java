@@ -5,8 +5,9 @@ import com.pioneer.sparrowdb.storage.exception.StorageException;
 import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
 import java.io.*;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * Each instance of HeapPage stores data for one page of HeapFiles and implements the Page interface that is used by
@@ -23,11 +24,9 @@ public class HeapPage implements Page {
 
     private Tuple tuples[];
 
-    private byte header[];
+    private boolean[] slotUsageBitMap;
 
     private int maxNumSlots;
-
-    private boolean [] slotUsageBitMap;
 
     byte[] oldData;
 
@@ -54,43 +53,140 @@ public class HeapPage implements Page {
     public HeapPage(HeapPageId heapPageId, byte[] pageData) {
         this.heapPageId = heapPageId;
         this.tupleDesc = Database.getCatalog().getTupleDesc(heapPageId.getTableId());
-        this.maxNumSlots = getMaxNumTuples();
+        this.maxNumSlots = getMaxSlotNum();
         this.slotUsageBitMap = new boolean[this.maxNumSlots];
-        tuples = new Tuple[maxNumSlots];
+        this.tuples = new Tuple[maxNumSlots];
 
         deserialize(pageData);
         setBeforeImage();
     }
 
-    private void deserialize(byte[] pageData){
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(pageData));
-        try {
-            // allocate and read the header slots of this page
-            header = new byte[getHeaderSize()];
-            for (int i = 0; i < header.length; i++) {
-                header[i] = dis.readByte();
-            }
+    @Override
+    public PageID getId() {
+        return heapPageId;
+    }
 
-            // allocate and read the actual records of this page
-            for (int i = 0; i < tuples.length; i++) {
-                tuples[i] = readNextTuple(dis, i);
-            }
-            dis.close();
+    @Override
+    public byte[] serialize() throws StorageException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(BufferPool.PAGE_SIZE);
+        DataOutputStream dos = new DataOutputStream(baos);
+        try {
+            // 1.序列化 slot 使用状态位图
+            serializeSlotStatus(dos);
+
+            // 2.序列化行数据
+            serializeTuples(dos);
+
+            // 3.slot状态位图和行数据之外的位置填充 0
+            paddingZero(dos);
+
+            dos.flush();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new StorageException(e);
+        }
+        return baos.toByteArray();
+    }
+
+    private void serializeSlotStatus(DataOutputStream dos) throws IOException {
+        for (boolean status : slotUsageBitMap) {
+            dos.writeBoolean(status);
         }
     }
 
-    public void setBeforeImage() {
-        oldData = getPageData().clone();
+    private void serializeTuples(DataOutputStream dos) throws IOException {
+        for (int i = 0; i < tuples.length; i++) {
+            if (isSlotUsed(i)) {
+                for (Field field : tuples[i].getFields()) {
+                    field.serialize(dos);
+                }
+            } else { // 空slot的位置填充
+                fillBytes(dos, BufferPool.PAGE_SIZE);
+            }
+        }
+    }
+
+    private void paddingZero(DataOutputStream dos) throws IOException {
+        int zeroSize = BufferPool.PAGE_SIZE - slotUsageBitMap.length - tupleDesc.getSize() * tuples.length;
+        fillBytes(dos, zeroSize);
     }
 
     /**
-     * Retrieve the max number of tuples on this page.
+     * 向dos中填充指定数量的字节
      *
-     * @return the number of tuples on this page
+     * @param dos      DataOutputStream
+     * @param bytesNum 填充的字节数量
+     * @throws IOException write byte error
      */
-    private int getMaxNumTuples() {
+    protected void fillBytes(DataOutputStream dos, int bytesNum) throws IOException {
+        if (dos == null) {
+            throw new StorageException("fill bytes error: stream is closed ");
+        }
+        byte[] emptyBytes = new byte[bytesNum];
+        dos.write(emptyBytes, 0, bytesNum);
+    }
+
+    @Override
+    public void deserialize(byte[] pageData) throws StorageException {
+        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(pageData));
+        try {
+            // slot状态位反序列化
+            for (int i = 0; i < slotUsageBitMap.length; i++) {
+                slotUsageBitMap[i] = dis.readBoolean();
+            }
+            // 行数据Row反序列化
+            tuples = new Tuple[maxNumSlots];
+            // allocate and read the actual records of this page
+            for (int i = 0; i < tuples.length; i++) {
+                tuples[i] = readTuple(dis, i);
+            }
+            dis.close();
+        } catch (Exception e) {
+            throw new StorageException(e);
+        }
+    }
+
+    private Tuple readTuple(DataInputStream dataInputStream, int slotId) throws ParseException {
+        Tuple tuple = new Tuple(tupleDesc);
+        tuple.setRecordId(new RecordId(heapPageId, slotId));
+
+        for (int index = 0; index < tupleDesc.numFields(); index++) {
+            Field field = tupleDesc.getFieldType(index).parse(dataInputStream);
+            tuple.setField(index, field);
+        }
+        return tuple;
+    }
+
+    @Override
+    public void insertTuple(Tuple tuple) throws StorageException {
+        if (!tupleDesc.equals(tuple.getTupleDesc())) {
+            throw new StorageException("tupleDesc is mismatch");
+        }
+        for (int i = 0; i < getMaxSlotNum(); i++) {
+            if (!isSlotUsed(i)) {
+                tuples[i] = tuple;
+                tuple.setRecordId(new RecordId(heapPageId, i));
+                slotUsageBitMap[i] = true;
+                return;
+            }
+        }
+        throw new StorageException("the page is full (no empty slots)");
+    }
+
+    @Override
+    public void deleteTuple(Tuple tuple) throws StorageException {
+        if (tuple == null) {
+            return;
+        }
+        int tupleNum = tuple.getRecordId().tupleno();
+        if (!isSlotUsed(tupleNum)) {
+            throw new StorageException("this tuple is not on this page, or tuple slot is already empty");
+        }
+        tuples[tupleNum] = null;
+        slotUsageBitMap[tupleNum] = false;
+    }
+
+    @Override
+    public int getMaxSlotNum() {
         if (maxNumSlots != 0) {
             return maxNumSlots;
         }
@@ -98,135 +194,44 @@ public class HeapPage implements Page {
         return numTuples;
     }
 
-    /**
-     * Computes the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
-     *
-     * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
-     */
-    private int getHeaderSize() {
-        // some code goes here
-        int headerSize = (int) Math.ceil(getMaxNumTuples() / 8.0);
-        return headerSize;
+    @Override
+    public boolean isSlotUsed(int index) {
+        return slotUsageBitMap[index];
+    }
+
+    @Override
+    public boolean hasEmptySlot() {
+        for (boolean item : slotUsageBitMap) {
+            if (item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public TransactionId isDirty() {
+        return null;
+    }
+
+    @Override
+    public void markDirty(boolean dirty, TransactionId tid) {
 
     }
 
-    /**
-     * Return a view of this page before it was modified
-     * -- used by recovery
-     */
-    public HeapPage getBeforeImage() {
+    @Override
+    public void setBeforeImage() {
+        this.oldData = serialize().clone();
+    }
+
+    @Override
+    public Page getBeforeImage() {
         return new HeapPage(heapPageId, oldData);
     }
 
-    /**
-     * @return the PageId associated with this page.
-     */
-    public HeapPageId getId() {
-        return heapPageId;
-    }
-
-    /**
-     * Suck up tuples from the source file.
-     */
-    private Tuple readNextTuple(DataInputStream dis, int slotId) throws NoSuchElementException {
-        // if associated bit is not set, read forward to the next tuple, and return null.
-        if (!isSlotUsed(slotId)) {
-            for (int i = 0; i < tupleDesc.getSize(); i++) {
-                try {
-                    dis.readByte();
-                } catch (IOException e) {
-                    throw new NoSuchElementException("error reading empty tuple");
-                }
-            }
-            return null;
-        }
-        // read fields in the tuple
-        Tuple tuple = new Tuple(tupleDesc);
-        RecordId recordId = new RecordId(heapPageId, slotId);
-        tuple.setRecordId(recordId);
-        try {
-            for (int j = 0; j < tupleDesc.numFields(); j++) {
-                Field field = tupleDesc.getFieldType(j).parse(dis);
-                tuple.setField(j, field);
-            }
-        } catch (java.text.ParseException e) {
-            e.printStackTrace();
-            throw new NoSuchElementException("parsing error!");
-        }
-        return tuple;
-    }
-
-    /**
-     * Generates a byte array representing the contents of this page.
-     * Used to serialize this page to disk.
-     * <p>
-     * The invariant here is that it should be possible to pass the byte
-     * array generated by getPageData to the HeapPage constructor and
-     * have it produce an identical HeapPage object.
-     *
-     * @return A byte array correspond to the bytes of this page.
-     * @see #HeapPage
-     */
-    public byte[] getPageData() {
-        int len = BufferPool.PAGE_SIZE;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
-        DataOutputStream dos = new DataOutputStream(baos);
-
-        // create the header of the page
-        for (int i = 0; i < header.length; i++) {
-            try {
-                dos.writeByte(header[i]);
-            } catch (IOException e) {
-                // this really shouldn't happen
-                e.printStackTrace();
-            }
-        }
-
-        // create the tuples
-        for (int i = 0; i < tuples.length; i++) {
-            // empty slot
-            if (!isSlotUsed(i)) {
-                for (int j = 0; j < tupleDesc.getSize(); j++) {
-                    try {
-                        dos.writeByte(0);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-                continue;
-            }
-
-            // non-empty slot
-            for (int j = 0; j < tupleDesc.numFields(); j++) {
-                Field f = tuples[i].getField(j);
-                try {
-                    f.serialize(dos);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        // padding
-        // 填充字节0
-        int zerolen = BufferPool.PAGE_SIZE - (header.length + tupleDesc.getSize() * tuples.length); //- numSlots * td
-        // .getSize();
-        byte[] zeroes = new byte[zerolen];
-        try {
-            dos.write(zeroes, 0, zerolen);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            dos.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return baos.toByteArray();
+    @Override
+    public Iterator<Tuple> tupleIterator() {
+        return new HeapTupleIterator();
     }
 
     /**
@@ -240,172 +245,32 @@ public class HeapPage implements Page {
      */
     public static byte[] createEmptyPageData() {
         int len = BufferPool.PAGE_SIZE;
-        return new byte[len]; //all 0
+        return new byte[len];
     }
 
-    /**
-     * Delete the specified tuple from the page;  the tuple should be updated to reflect
-     * that it is no longer stored on any page.
-     *
-     * @param tuple The tuple to delete
-     * @throws StorageException if this tuple is not on this page, or tuple slot is
-     *                          already empty.
-     */
-    public void deleteTuple(Tuple tuple) throws StorageException {
-        if(tuple==null){
-            return;
-        }
-        int slotIndex = tuple.getRecordId().tupleno();
+    private class HeapTupleIterator implements Iterator<Tuple> {
 
-    }
+        private Iterator<Tuple> tupleIterator;
 
-    /**
-     * Adds the specified tuple to the page;  the tuple should be updated to reflect
-     * that it is now stored on this page.
-     *
-     * @param tuple The tuple to add.
-     * @throws StorageException if the page is full (no empty slots) or tupledesc
-     *                          is mismatch.
-     */
-    public void insertTuple(Tuple tuple) throws StorageException {
-        if (!tupleDesc.equals(tuple.getTupleDesc())) {
-            throw new StorageException("tupleDesc is mismatch");
-        }
-        for (int i = 0; i < getMaxNumTuples(); i++) {
-            if (!isSlotUsed(i)) {
-                tuples[i] = tuple;
-                //修改tuple的信息，表明它现在存储在这个page上
-                tuple.setRecordId(new RecordId(heapPageId, i));
-                markSlotUsed(i, true);
-                return;
+        public HeapTupleIterator() {
+            ArrayList<Tuple> rowList = new ArrayList<>();
+            for (int i = 0; i < slotUsageBitMap.length; i++) {
+                if (isSlotUsed(i)) {
+                    rowList.add(tuples[i]);
+                }
             }
+            tupleIterator = rowList.iterator();
         }
-        throw new StorageException("the page is full (no empty slots)");
-    }
-
-    /**
-     * Marks this page as dirty/not dirty and record that transaction
-     * that did the dirtying
-     */
-    public void markDirty(boolean dirty, TransactionId tid) {
-        // some code goes here
-        // not necessary for lab1
-    }
-
-    /**
-     * Returns the tid of the transaction that last dirtied this page, or null if the page is not dirty
-     */
-    public TransactionId isDirty() {
-        // some code goes here
-        // Not necessary for lab1
-        return null;
-    }
-
-    /**
-     * Returns the number of empty slots on this page.
-     */
-    public int getNumEmptySlots() {
-        // some code goes here
-        int emptySlots = 0;
-        for (int i = 0; i < getMaxNumTuples(); i++) {
-            if (!isSlotUsed(i)) {
-                emptySlots++;
-            }
-        }
-        return emptySlots;
-    }
-
-    /**
-     * Returns true if associated slot on this page is filled.
-     */
-    public boolean isSlotUsed(int i) {
-        // some code goes here
-        //例如有18个slots，而且全是used的，那么header的二进制数据为[11111111, 11111111, 00000011]
-        //最后一个byte的前面六个0i并不对应slot
-        int byteNum = i / 8;//计算在第几个字节
-        int posInByte = i % 8;//计算在该字节的第几位,从右往左算（这是因为JVM用big-ending）
-        return isOne(header[byteNum], posInByte);
-    }
-
-    /**
-     * @param target    要判断的bit所在的byte
-     * @param posInByte 要判断的bit在byte的从右往左的偏移量，从0开始
-     * @return target从右往左偏移量pos处的bit是否为1
-     */
-    private boolean isOne(byte target, int posInByte) {
-        // 例如该byte是11111011,pos是2(也就是0那个bit的位置)
-        // 那么只需先左移7-2=5位即可通过符号位来判断，注意要强转
-
-        return (byte) (target << (7 - posInByte)) < 0;
-    }
-
-    /**
-     * Abstraction to fill or clear a slot on this page.
-     */
-    private void markSlotUsed(int i, boolean value) {
-        int byteNum = i / 8;//计算在第几个字节
-        int posInByte = i % 8;//计算在该字节的第几位,从右往左算（这是因为JVM用big-ending）
-        header[byteNum] = editBitInByte(header[byteNum], posInByte, value);
-    }
-
-    /**
-     * 修改一个byte的指定位置的bit
-     *
-     * @param target    待修改的byte
-     * @param posInByte bit的位置在target的偏移量，从右往左且从0开始算，取值范围为0到7
-     * @param value     为true修改该bit为1,为false时修改为0
-     * @return 修改后的byte
-     */
-    private byte editBitInByte(byte target, int posInByte, boolean value) {
-        if (posInByte < 0 || posInByte > 7) {
-            throw new IllegalArgumentException();
-        }
-        byte b = (byte) (1 << posInByte);//将1这个bit移到指定位置，例如pos为3,value为true，将得到00001000
-        //如果value为1,使用字节00001000以及"|"操作可以将指定位置改为1，其他位置不变
-        //如果value为0,使用字节11110111以及"&"操作可以将指定位置改为0，其他位置不变
-        return value ? (byte) (target | b) : (byte) (target & ~b);
-    }
-
-    /**
-     * @return an iterator over all tuples on this page (calling remove on this iterator throws an
-     * UnsupportedOperationException)
-     * (note that this iterator shouldn't return tuples in empty slots!)
-     */
-    public Iterator<Tuple> iterator() {
-        // some code goes here
-        return new UsedTupleIterator();
-    }
-
-    private class UsedTupleIterator implements Iterator<Tuple> {
-
-        /**
-         * 例子：header数组与遍历过程各个量的变化如下
-         * headers: [00101000]
-         * index:   [01234567]
-         * pos:     [00011222]
-         * pos在找到一个为1的bit之后才加一
-         */
-
-        private int pos = 0;
-        private int index = 0;//tuple数组的下标变化
-        private int usedTuplesNum = getMaxNumTuples() - getNumEmptySlots();
 
         @Override
         public boolean hasNext() {
-            return index < getMaxNumTuples() && pos < usedTuplesNum;
+            return tupleIterator.hasNext();
         }
 
         @Override
         public Tuple next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            for (; !isSlotUsed(index); index++) {
-            }//直到找到在使用的(对应的slot非空的)tuple，再返回
-            pos++;
-            return tuples[index++];
+            return tupleIterator.next();
         }
     }
-
 }
 
