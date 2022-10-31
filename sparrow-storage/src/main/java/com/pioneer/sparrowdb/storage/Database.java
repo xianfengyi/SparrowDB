@@ -1,7 +1,10 @@
 package com.pioneer.sparrowdb.storage;
 
+import com.pioneer.sparrowdb.storage.file.logfile.RedoLogFile;
+import com.pioneer.sparrowdb.storage.file.logfile.UndoLogFile;
+import com.pioneer.sparrowdb.storage.transaction.LockManager;
+
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Database is a class that initializes several static
@@ -13,59 +16,67 @@ import java.io.IOException;
  */
 
 public class Database {
-    private static Database _instance = new Database();
-    private final Catalog _catalog;
-    private BufferPool _bufferpool;
 
-    private final static String LOGFILENAME = "log";
-    private LogFile _logfile;
+    private static Database _instance = new Database();
+
+    /**
+     * 数据目录
+     */
+    private final Catalog catalog;
+
+    /**
+     * 缓冲池
+     */
+    private BufferPool bufferPool;
+
+    /**
+     * 锁管理器
+     */
+    private final LockManager lockManager;
+
+    /**
+     * undo 日志
+     */
+    private final UndoLogFile undoLogFile;
+
+    /**
+     * redo 日志
+     */
+    private final RedoLogFile redoLogFile;
 
     private Database() {
-        _catalog = new Catalog();
-        _bufferpool = new BufferPool(BufferPool.DEFAULT_PAGES);
-        try {
-            _logfile = new LogFile(new File(LOGFILENAME));
-        } catch (IOException e) {
-            _logfile = null;
-            e.printStackTrace();
-            System.exit(1);
-        }
-        // startControllerThread();
+        this.catalog = new Catalog();
+        this.bufferPool = new BufferPool(BufferPool.DEFAULT_PAGES);
+        this.lockManager = new LockManager();
+        this.undoLogFile = new UndoLogFile(new File("undo"));
+        this.redoLogFile = new RedoLogFile(new File("redo"));
     }
 
     /**
-     * Return the log file of the static Database instance
+     * reset the database, used for unit tests only.
      */
-    public static LogFile getLogFile() {
-        return _instance._logfile;
-    }
-
-    /**
-     * Return the buffer pool of the static Database instance
-     */
-    public static BufferPool getBufferPool() {
-        return _instance._bufferpool;
-    }
-
-    /**
-     * Return the catalog of the static Database instance
-     */
-    public static Catalog getCatalog() {
-        return _instance._catalog;
-    }
-
-    /**
-     * Method used for testing -- create a new instance of the
-     * buffer pool and return it
-     */
-    public static BufferPool resetBufferPool(int pages) {
-        _instance._bufferpool = new BufferPool(pages);
-        return _instance._bufferpool;
-    }
-
-    //reset the database, used for unit tests only.
     public static void reset() {
         _instance = new Database();
+    }
+
+    public static Catalog getCatalog() {
+        return _instance.catalog;
+    }
+
+    public static BufferPool getBufferPool() {
+        return _instance.bufferPool;
+    }
+
+    public static LockManager getLockManager() {
+        return _instance.lockManager;
+    }
+
+    public static UndoLogFile getUndoLogFile() {
+        return _instance.undoLogFile;
+    }
+
+    public static RedoLogFile getRedoLogFile() {
+        return _instance.redoLogFile;
     }
 
 }

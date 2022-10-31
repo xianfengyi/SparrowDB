@@ -3,8 +3,8 @@ package com.pioneer.sparrowdb.storage.file.heap;
 
 import com.pioneer.sparrowdb.storage.*;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,7 +70,7 @@ public class HeapFile implements TableFile {
     }
 
     @Override
-    public Page insertTuple(TransactionId transactionId, Tuple tuple) throws StorageException {
+    public Page insertTuple(TransactionID transactionId, Tuple tuple) throws StorageException {
         int curPageCount = this.getPageCount();
         HeapPage heapPage = null;
         if (curPageCount == 0) {
@@ -86,7 +86,7 @@ public class HeapFile implements TableFile {
     }
 
     @Override
-    public Page deleteTuple(TransactionId tid, Tuple tuple) throws StorageException {
+    public Page deleteTuple(TransactionID tid, Tuple tuple) throws StorageException {
         PageID pid = tuple.getRecordId().getPageId();
         HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid);
         page.deleteTuple(tuple);
@@ -94,7 +94,7 @@ public class HeapFile implements TableFile {
     }
 
     @Override
-    public TableFileIterator iterator(TransactionId tid) {
+    public TableFileIterator iterator(TransactionID tid) {
         return new HeapFileIterator(tid);
     }
 
@@ -102,7 +102,7 @@ public class HeapFile implements TableFile {
         return (int) file.length() / BufferPool.PAGE_SIZE;
     }
 
-    private Page getFirstPageHasEmptySlot(TransactionId tid, int curPageCount) {
+    private Page getFirstPageHasEmptySlot(TransactionID tid, int curPageCount) {
         for (int pageNo = 0; pageNo < curPageCount; pageNo++) {
             HeapPageId heapPageId = new HeapPageId(this.getTableId(), pageNo);
             HeapPage heapPage = (HeapPage) Database.getBufferPool().getPage(tid, heapPageId);
@@ -119,9 +119,9 @@ public class HeapFile implements TableFile {
 
         private Iterator<Tuple> tuplesInPage;
 
-        private TransactionId tid;
+        private TransactionID tid;
 
-        public HeapFileIterator(TransactionId tid) {
+        public HeapFileIterator(TransactionID tid) {
             this.tid = tid;
         }
 
@@ -131,14 +131,14 @@ public class HeapFile implements TableFile {
         }
 
         @Override
-        public void open() throws StorageException, TransactionAbortedException {
+        public void open() throws StorageException, TransactionException {
             pagePos = 0;
             HeapPageId pid = new HeapPageId(getTableId(), pagePos);
             tuplesInPage = getTuplesInPage(pid);
         }
 
         @Override
-        public boolean hasNext() throws StorageException, TransactionAbortedException {
+        public boolean hasNext() throws StorageException, TransactionException {
             if (tuplesInPage == null) {
                 return false;
             }
@@ -154,7 +154,7 @@ public class HeapFile implements TableFile {
         }
 
         @Override
-        public Tuple next() throws StorageException, TransactionAbortedException, NoSuchElementException {
+        public Tuple next() throws StorageException, TransactionException, NoSuchElementException {
             if (!hasNext()) {
                 throw new NoSuchElementException("not opened or no tuple remained");
             }
@@ -162,7 +162,7 @@ public class HeapFile implements TableFile {
         }
 
         @Override
-        public void rewind() throws StorageException, TransactionAbortedException {
+        public void rewind() throws StorageException, TransactionException {
             open();
         }
 

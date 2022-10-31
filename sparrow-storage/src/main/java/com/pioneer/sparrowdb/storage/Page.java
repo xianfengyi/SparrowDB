@@ -1,10 +1,8 @@
 package com.pioneer.sparrowdb.storage;
 
 import com.pioneer.sparrowdb.storage.exception.StorageException;
-import com.pioneer.sparrowdb.storage.file.bptree.BPTreePageID;
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
-import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -71,12 +69,12 @@ public interface Page {
      *
      * @return The id of the transaction that last dirtied this page, or null
      */
-    TransactionId isDirty();
+    TransactionID isDirty();
 
     /**
      * Set the dirty state of this page as dirtied by a particular transaction
      */
-    void markDirty(boolean dirty, TransactionId tid);
+    void markDirty(boolean dirty, TransactionID tid);
 
     /**
      * 保留页原始数据

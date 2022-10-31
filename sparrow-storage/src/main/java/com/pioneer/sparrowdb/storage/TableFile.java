@@ -1,8 +1,8 @@
 package com.pioneer.sparrowdb.storage;
 
 import com.pioneer.sparrowdb.storage.exception.StorageException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
 import java.io.Serializable;
 
@@ -50,7 +50,7 @@ public interface TableFile extends Serializable {
      * @return Page the affect page
      * @throws StorageException if insert fail, throw this exception
      */
-    Page insertTuple(TransactionId transactionId, Tuple tuple) throws StorageException;
+    Page insertTuple(TransactionID transactionId, Tuple tuple) throws StorageException;
 
     /**
      * Removes the specifed tuple from the file on behalf of the specified
@@ -59,7 +59,7 @@ public interface TableFile extends Serializable {
      * @throws StorageException if the tuple cannot be deleted or is not a member
      *                          of the file
      */
-    Page deleteTuple(TransactionId tid, Tuple t) throws StorageException, TransactionAbortedException;
+    Page deleteTuple(TransactionID tid, Tuple t) throws StorageException, TransactionException;
 
     /**
      * Returns an iterator over all the tuples stored in this TableFile. The
@@ -68,5 +68,5 @@ public interface TableFile extends Serializable {
      *
      * @return an iterator over all the tuples stored in this DbFile.
      */
-    TableFileIterator iterator(TransactionId tid);
+    TableFileIterator iterator(TransactionID tid);
 }

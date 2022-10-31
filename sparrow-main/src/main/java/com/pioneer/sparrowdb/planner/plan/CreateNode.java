@@ -6,7 +6,7 @@ import com.pioneer.sparrowdb.storage.TupleDesc;
 import com.pioneer.sparrowdb.storage.Type;
 import com.pioneer.sparrowdb.storage.file.heap.HeapFile;
 import com.pioneer.sparrowdb.storage.model.DbTable;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class CreateNode extends PlanNode {
         this.dbTable = dbTable;
     }
 
-    public void execute() throws TransactionAbortedException {
+    public void execute() throws TransactionException {
         int len = dbTable.getColumns().size();
         Type types[] = new Type[len];
         String names[] = new String[len];

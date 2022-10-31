@@ -1,7 +1,7 @@
 package com.pioneer.sparrowdb.storage;
 
 import com.pioneer.sparrowdb.storage.exception.StorageException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -16,12 +16,12 @@ public interface TableFileIterator extends Serializable {
      *
      * @throws StorageException when there are problems opening/accessing the database.
      */
-    void open() throws StorageException, TransactionAbortedException;
+    void open() throws StorageException, TransactionException;
 
     /**
      * @return true if there are more tuples available.
      */
-    boolean hasNext() throws StorageException, TransactionAbortedException;
+    boolean hasNext() throws StorageException, TransactionException;
 
     /**
      * Gets the next tuple from the operator (typically implementing by reading
@@ -30,14 +30,14 @@ public interface TableFileIterator extends Serializable {
      * @return The next tuple in the iterator.
      * @throws NoSuchElementException if there are no more tuples
      */
-    Tuple next() throws StorageException, TransactionAbortedException, NoSuchElementException;
+    Tuple next() throws StorageException, TransactionException, NoSuchElementException;
 
     /**
      * Resets the iterator to the start.
      *
      * @throws StorageException When rewind is unsupported.
      */
-    void rewind() throws StorageException, TransactionAbortedException;
+    void rewind() throws StorageException, TransactionException;
 
     /**
      * Closes the iterator.

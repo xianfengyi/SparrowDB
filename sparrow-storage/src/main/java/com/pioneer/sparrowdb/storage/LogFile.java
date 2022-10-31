@@ -29,7 +29,7 @@ package com.pioneer.sparrowdb.storage;
  </pre>
  */
 
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
 import java.io.EOFException;
 import java.io.File;
@@ -151,7 +151,7 @@ public class LogFile {
      the log to disk, and perform a rollback
      @param tid The aborting transaction.
      */
-    public void logAbort(TransactionId tid) throws IOException {
+    public void logAbort(TransactionID tid) throws IOException {
         // must have buffer pool lock before proceeding, since this
         // calls rollback
 
@@ -181,7 +181,7 @@ public class LogFile {
 
      @param tid The committing transaction.
      */
-    public synchronized void logCommit(TransactionId tid) throws IOException {
+    public synchronized void logCommit(TransactionID tid) throws IOException {
         preAppend();
         Debug.log("COMMIT " + tid.getId());
         //should we verify that this is a live transaction?
@@ -200,7 +200,7 @@ public class LogFile {
      @param before The before image of the page
      @param after The after image of the page
      */
-    public  synchronized void logWrite(TransactionId tid, Page before,
+    public  synchronized void logWrite(TransactionID tid, Page before,
                                        Page after)
             throws IOException  {
         Debug.log("WRITE, offset = " + raf.getFilePointer());
@@ -305,7 +305,7 @@ public class LogFile {
      @param tid The transaction that is beginning
 
      */
-    public synchronized  void logXactionBegin(TransactionId tid)
+    public synchronized  void logXactionBegin(TransactionID tid)
             throws IOException {
         Debug.log("BEGIN");
         if(tidToFirstLogRecord.get(tid.getId()) != null){
@@ -467,7 +467,7 @@ public class LogFile {
 
      @param tid The transaction to rollback
      */
-    public void rollback(TransactionId tid)
+    public void rollback(TransactionID tid)
             throws NoSuchElementException, IOException {
         synchronized (Database.getBufferPool()) {
             synchronized(this) {

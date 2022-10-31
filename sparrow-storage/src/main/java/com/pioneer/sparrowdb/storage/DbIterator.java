@@ -1,7 +1,7 @@
 package com.pioneer.sparrowdb.storage;
 
 import com.pioneer.sparrowdb.storage.exception.StorageException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -20,7 +20,7 @@ public interface DbIterator extends Serializable {
      *
      * @throws StorageException when there are problems opening/accessing the database.
      */
-    void open() throws StorageException, TransactionAbortedException;
+    void open() throws StorageException, TransactionException;
 
     /**
      * Returns true if the iterator has more tuples.
@@ -28,7 +28,7 @@ public interface DbIterator extends Serializable {
      * @return true f the iterator has more tuples.
      * @throws IllegalStateException If the iterator has not been opened
      */
-    boolean hasNext() throws StorageException, TransactionAbortedException;
+    boolean hasNext() throws StorageException, TransactionException;
 
     /**
      * Returns the next tuple from the operator (typically implementing by reading
@@ -38,7 +38,7 @@ public interface DbIterator extends Serializable {
      * @throws NoSuchElementException if there are no more tuples.
      * @throws IllegalStateException  If the iterator has not been opened
      */
-    Tuple next() throws StorageException, TransactionAbortedException, NoSuchElementException;
+    Tuple next() throws StorageException, TransactionException, NoSuchElementException;
 
     /**
      * Resets the iterator to the start.
@@ -46,7 +46,7 @@ public interface DbIterator extends Serializable {
      * @throws StorageException           when rewind is unsupported.
      * @throws IllegalStateException If the iterator has not been opened
      */
-    void rewind() throws StorageException, TransactionAbortedException;
+    void rewind() throws StorageException, TransactionException;
 
     /**
      * Returns the TupleDesc associated with this DbIterator.

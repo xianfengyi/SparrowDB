@@ -2,8 +2,8 @@ package com.pioneer.sparrowdb.planner.plan;
 
 import com.pioneer.sparrowdb.storage.SeqScan;
 import com.pioneer.sparrowdb.storage.Tuple;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
 public class TableScanNode extends PlanNode {
 
@@ -19,13 +19,13 @@ public class TableScanNode extends PlanNode {
 
     private SeqScan seqScan;
 
-    public TableScanNode(int id, String name, TransactionId transactionId) {
+    public TableScanNode(int id, String name, TransactionID transactionId) {
         this.id = id;
         this.name = name;
         seqScan = new SeqScan(transactionId, id);
         try {
             seqScan.open();
-        } catch (TransactionAbortedException e) {
+        } catch (TransactionException e) {
             throw new RuntimeException(e);
         }
     }
@@ -52,7 +52,7 @@ public class TableScanNode extends PlanNode {
                 seqScan.close();
                 return null;
             }
-        } catch (TransactionAbortedException e) {
+        } catch (TransactionException e) {
             throw new RuntimeException(e);
         }
     }

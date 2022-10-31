@@ -1,8 +1,8 @@
 package com.pioneer.sparrowdb.storage;
 
 import com.pioneer.sparrowdb.storage.exception.StorageException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
 import java.util.NoSuchElementException;
 
@@ -15,7 +15,7 @@ public class SeqScan implements DbIterator {
 
     private static final long serialVersionUID = 1L;
 
-    private TransactionId tid;
+    private TransactionID tid;
 
     private int tableid;
 
@@ -37,7 +37,7 @@ public class SeqScan implements DbIterator {
      *                   tableAlias.null, or null.null).
      *                                     todo 不明白上面的话什么意思
      */
-    public SeqScan(TransactionId tid, int tableid, String tableAlias) {
+    public SeqScan(TransactionID tid, int tableid, String tableAlias) {
         // some code goes here
         this.tid = tid;
         this.tableAlias = tableAlias;
@@ -78,11 +78,11 @@ public class SeqScan implements DbIterator {
         this.tableAlias = tableAlias;
     }
 
-    public SeqScan(TransactionId tid, int tableid) {
+    public SeqScan(TransactionID tid, int tableid) {
         this(tid, tableid, Database.getCatalog().getTableName(tableid));
     }
 
-    public void open() throws StorageException, TransactionAbortedException {
+    public void open() throws StorageException, TransactionException {
         // some code goes here
         tupleIterator.open();
     }
@@ -112,12 +112,12 @@ public class SeqScan implements DbIterator {
         return new TupleDesc(types, names);
     }
 
-    public boolean hasNext() throws TransactionAbortedException, StorageException {
+    public boolean hasNext() throws TransactionException, StorageException {
         // some code goes here
         return tupleIterator.hasNext();
     }
 
-    public Tuple next() throws NoSuchElementException, TransactionAbortedException, StorageException {
+    public Tuple next() throws NoSuchElementException, TransactionException, StorageException {
         // some code goes here
         return tupleIterator.next();
     }
@@ -127,7 +127,7 @@ public class SeqScan implements DbIterator {
         tupleIterator.close();
     }
 
-    public void rewind() throws StorageException, NoSuchElementException, TransactionAbortedException {
+    public void rewind() throws StorageException, NoSuchElementException, TransactionException {
         // some code goes here
         tupleIterator.rewind();
     }

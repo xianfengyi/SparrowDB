@@ -4,12 +4,14 @@ import com.pioneer.sparrowdb.storage.cache.PageLruCache;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
 import com.pioneer.sparrowdb.storage.file.heap.HeapFile;
 import com.pioneer.sparrowdb.storage.file.heap.HeapPage;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -68,7 +70,7 @@ public class BufferPool {
      * @param tid the ID of the transaction requesting the page
      * @param pid the ID of the requested page
      */
-    public Page getPage(TransactionId tid, PageID pid) throws StorageException {
+    public Page getPage(TransactionID tid, PageID pid) throws StorageException {
         HeapPage page = (HeapPage) lruPagesPool.get(pid);
         if (page != null) {//直接命中
             return page;
@@ -96,7 +98,7 @@ public class BufferPool {
      * @param tid the ID of the transaction requesting the unlock
      * @param pid the ID of the page to unlock
      */
-    public void releasePage(TransactionId tid, PageID pid) {
+    public void releasePage(TransactionID tid, PageID pid) {
         // some code goes here
         // not necessary for proj1
     }
@@ -106,7 +108,7 @@ public class BufferPool {
      *
      * @param tid the ID of the transaction requesting the unlock
      */
-    public void transactionComplete(TransactionId tid) throws IOException {
+    public void transactionComplete(TransactionID tid) throws IOException {
         // some code goes here
         // not necessary for proj1
     }
@@ -114,7 +116,7 @@ public class BufferPool {
     /**
      * Return true if the specified transaction has a lock on the specified page
      */
-    public boolean holdsLock(TransactionId tid, PageID p) {
+    public boolean holdsLock(TransactionID tid, PageID p) {
         // some code goes here
         // not necessary for proj1
         return false;
@@ -127,7 +129,7 @@ public class BufferPool {
      * @param tid    the ID of the transaction requesting the unlock
      * @param commit a flag indicating whether we should commit or abort
      */
-    public void transactionComplete(TransactionId tid, boolean commit) throws IOException {
+    public void transactionComplete(TransactionID tid, boolean commit) throws IOException {
         // some code goes here
         // not necessary for proj1
     }
@@ -146,8 +148,7 @@ public class BufferPool {
      * @param tableId the table to add the tuple to
      * @param t       the tuple to add
      */
-    public void insertTuple(TransactionId tid, int tableId, Tuple t) throws StorageException, IOException,
-            TransactionAbortedException {
+    public void insertTuple(TransactionID tid, int tableId, Tuple t) throws StorageException, IOException, TransactionException {
         HeapFile table = (HeapFile) Database.getCatalog().getDbFile(tableId);
         Page page = table.insertTuple(tid, t);
         page.markDirty(true, tid);
@@ -166,7 +167,7 @@ public class BufferPool {
      * @param tid the transaction adding the tuple.
      * @param t   the tuple to add
      */
-    public void deleteTuple(TransactionId tid, Tuple t) throws StorageException, TransactionAbortedException {
+    public void deleteTuple(TransactionID tid, Tuple t) throws StorageException, TransactionException {
         int tableId = t.getRecordId().getPageId().getTableId();
         HeapFile table = (HeapFile) Database.getCatalog().getDbFile(tableId);
         Page affectedPage = table.deleteTuple(tid, t);
@@ -213,7 +214,7 @@ public class BufferPool {
     /**
      * Write all pages of the specified transaction to disk.
      */
-    public synchronized void flushPages(TransactionId tid) throws IOException {
+    public synchronized void flushPages(TransactionID tid) throws IOException {
         Iterator<Page> it = lruPagesPool.iterator();
         while (it.hasNext()) {
             Page p = it.next();
@@ -223,6 +224,19 @@ public class BufferPool {
                     p.saveBeforePage();
                 }
             }
+        }
+    }
+
+    /**
+     * 丢弃脏页
+     */
+    public void discardPages(List<PageID> pageIDs) {
+        if (Objects.isNull(pageIDs) || pageIDs.isEmpty()) {
+            System.out.println("discardPages : pageIDs is null or empty ");
+            return;
+        }
+        for (PageID pageID : pageIDs) {
+            lruPagesPool.removePage(pageID);
         }
     }
 }

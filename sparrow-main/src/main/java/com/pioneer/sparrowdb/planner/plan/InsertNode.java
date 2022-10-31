@@ -4,14 +4,14 @@ import com.pioneer.sparrowdb.storage.Database;
 import com.pioneer.sparrowdb.storage.DbIterator;
 import com.pioneer.sparrowdb.storage.Tuple;
 import com.pioneer.sparrowdb.storage.TupleDesc;
-import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.exception.TransactionException;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
 import java.io.IOException;
 
 public class InsertNode extends PlanNode {
 
-    private TransactionId transactionId;
+    private TransactionID transactionId;
 
     private TupleDesc tupleDesc;
 
@@ -21,13 +21,13 @@ public class InsertNode extends PlanNode {
 
     private int insertCount;
 
-    public InsertNode(DbIterator dbIterator, int tableId, TransactionId transactionId) {
+    public InsertNode(DbIterator dbIterator, int tableId, TransactionID transactionId) {
         this.dbIterator = dbIterator;
         this.tableId = tableId;
         this.transactionId = transactionId;
     }
 
-    public void execute() throws TransactionAbortedException {
+    public void execute() throws TransactionException {
         while (dbIterator.hasNext()) {
             Tuple next = dbIterator.next();
             try {

@@ -2,8 +2,7 @@ package com.pioneer.sparrowdb.storage.file.heap;
 
 import com.pioneer.sparrowdb.storage.*;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
-import com.pioneer.sparrowdb.storage.file.bptree.BPTreePageID;
-import com.pioneer.sparrowdb.storage.transaction.TransactionId;
+import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 
 import java.io.*;
 import java.text.ParseException;
@@ -217,12 +216,12 @@ public class HeapPage implements Page {
     }
 
     @Override
-    public TransactionId isDirty() {
+    public TransactionID isDirty() {
         return null;
     }
 
     @Override
-    public void markDirty(boolean dirty, TransactionId tid) {
+    public void markDirty(boolean dirty, TransactionID tid) {
 
     }
 
