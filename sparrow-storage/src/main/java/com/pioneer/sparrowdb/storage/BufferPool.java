@@ -8,7 +8,6 @@ import com.pioneer.sparrowdb.storage.transaction.TransactionAbortedException;
 import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -21,7 +20,6 @@ import java.util.Iterator;
  * a page, BufferPool checks that the transaction has the appropriate
  * locks to read/write the page.
  */
-// TODO: 17-5-23 未完成
 public class BufferPool {
 
     /**
@@ -87,15 +85,6 @@ public class BufferPool {
             }
         }
         return newPage;
-    }
-
-    // TODO: 17-5-26 到时候在这里实现替换策略
-    private void addNewPage(PageID pid, Page newPage) {
-        pid2pages.put(pid, newPage);
-        //如果超出了最大的缓存页数量
-        if (pid2pages.size() > PAGES_NUM) {
-            // TODO: 17-5-26 implement this
-        }
     }
 
     /**
@@ -197,7 +186,6 @@ public class BufferPool {
                 flushPage(p);
             }
         }
-
     }
 
     /**
@@ -207,8 +195,7 @@ public class BufferPool {
      * cache.
      */
     public synchronized void discardPage(PageID pid) {
-        // some code goes here
-        // not necessary for proj1
+        lruPagesPool.removePage(pid);
     }
 
     /**
@@ -238,14 +225,4 @@ public class BufferPool {
             }
         }
     }
-
-    /**
-     * Discards a page from the buffer pool.
-     * Flushes the page to disk to ensure dirty pages are updated on disk.
-     */
-    private synchronized void evictPage() throws StorageException {
-        // some code goes here
-        // not necessary for proj1
-    }
-
 }

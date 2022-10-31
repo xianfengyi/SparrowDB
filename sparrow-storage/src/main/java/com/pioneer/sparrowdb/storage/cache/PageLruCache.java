@@ -50,13 +50,12 @@ public class PageLruCache extends LruCache<PageID, Page> {
         }
     }
 
-
     /**
      * 删除cache中pageId对应的page
      *
      * @param pid
      */
-    private synchronized void removePage(PageID pid) {
+    public synchronized void removePage(PageID pid) {
         if (!isCached(pid)) {
             throw new IllegalArgumentException();
         }
