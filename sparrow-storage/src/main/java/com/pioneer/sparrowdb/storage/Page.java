@@ -81,7 +81,7 @@ public interface Page {
     /**
      * 保留页原始数据
      */
-    void setBeforeImage();
+    void saveBeforePage();
 
     /**
      * Provide a representation of this page before any modifications were made
@@ -89,10 +89,5 @@ public interface Page {
      */
     Page getBeforeImage();
 
-
     Iterator<Tuple> tupleIterator();
-
-    BPTreePageID getPageID();
-
-    void saveBeforePage();
 }

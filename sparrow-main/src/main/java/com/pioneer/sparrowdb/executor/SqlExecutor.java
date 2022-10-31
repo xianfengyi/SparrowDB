@@ -65,8 +65,8 @@ public class SqlExecutor {
                 InsertNode insertNode = (InsertNode) planNode;
                 insertNode.execute();
             }else if(planNode instanceof DeleteNode){
-                DeleteNode insertNode = (DeleteNode) planNode;
-                insertNode.execute();
+                DeleteNode deleteNode = (DeleteNode) planNode;
+                deleteNode.execute();
             }else if(planNode instanceof CreateNode){
                 CreateNode createNode = (CreateNode) planNode;
                 createNode.execute();

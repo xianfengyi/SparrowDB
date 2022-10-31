@@ -48,7 +48,7 @@ public class HeapFile implements TableFile {
 
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             // page在HeapFile的偏移量
-            int pos = pageID.pageNumber() * BufferPool.PAGE_SIZE;
+            int pos = pageID.getPageNo() * BufferPool.PAGE_SIZE;
             raf.seek(pos);
             raf.read(data, 0, data.length);
             page = new HeapPage((HeapPageId) pageID, data);
@@ -61,7 +61,7 @@ public class HeapFile implements TableFile {
     @Override
     public void writePage(Page page) throws StorageException {
         try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-            raf.seek(page.getId().pageNumber() * BufferPool.PAGE_SIZE);
+            raf.seek(page.getId().getPageNo() * BufferPool.PAGE_SIZE);
             byte[] data = page.serialize();
             raf.write(data);
         } catch (IOException exp) {
@@ -75,8 +75,7 @@ public class HeapFile implements TableFile {
         HeapPage heapPage = null;
         if (curPageCount == 0) {
             PageID pageID = new HeapPageId(this.getTableId(), 0);
-            heapPage = new HeapPage(new HeapPageId(this.getTableId(), pageID.pageNumber()),
-                    HeapPage.createEmptyPageData());
+            heapPage = new HeapPage((HeapPageId)pageID, HeapPage.createEmptyPageData());
             writePage(heapPage);
             heapPage = (HeapPage) Database.getBufferPool().getPage(transactionId, pageID);
         } else {

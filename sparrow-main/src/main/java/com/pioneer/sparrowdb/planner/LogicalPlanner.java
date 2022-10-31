@@ -34,7 +34,7 @@ public class LogicalPlanner {
             ColumnDefinition columnDefinition = (ColumnDefinition) element;
             columns.add(new DbTable.Column(columnDefinition.getName().getValue(), columnDefinition.getType()));
         }
-        return new CreateNode(new DbTable(tableName,columns));
+        return new CreateNode(new DbTable(tableName, columns));
     }
 
     private PlanNode createQueryPlan(Query statement, TransactionId transactionId) {
@@ -60,7 +60,9 @@ public class LogicalPlanner {
     }
 
     private PlanNode getTableScanNode(Table table, TransactionId transactionId) {
-        return new TableScanNode(1, table.getName().toString(), transactionId);
+        String tableName = table.getName().toString();
+        int tableId = Database.getCatalog().getTableId(tableName);
+        return new TableScanNode(tableId, tableName, transactionId);
     }
 
     private PlanNode getWhereNode(PlanNode source, Optional<Expression> where) {
@@ -95,9 +97,6 @@ public class LogicalPlanner {
     }
 
     private PlanNode createDeletePlan(Delete statement, TransactionId transactionId) {
-        int tableId = 1;
-        TupleDesc tupleDesc = Database.getCatalog().getTupleDesc(tableId);
-
         Table table = statement.getTable();
         Optional<Expression> where = statement.getWhere();
 
@@ -111,12 +110,14 @@ public class LogicalPlanner {
             }
             tuples.add(tuple);
         }
+        int tableId= Database.getCatalog().getTableId(table.getName().toString());
+        TupleDesc tupleDesc = Database.getCatalog().getTupleDesc(tableId);
         TupleIterator tupleIterator = new TupleIterator(tupleDesc, tuples);
         return new DeleteNode(tupleIterator, transactionId);
     }
 
     private PlanNode createInsertPlan(Insert statement, TransactionId transactionId) {
-        int tableId = 1;
+        int tableId = Database.getCatalog().getTableId(statement.getTarget().toString());
         TupleDesc tupleDesc = Database.getCatalog().getTupleDesc(tableId);
         Tuple tuple = new Tuple(tupleDesc);
 
@@ -131,7 +132,7 @@ public class LogicalPlanner {
             }
         }
         TupleIterator tupleIterator = new TupleIterator(tupleDesc, Arrays.asList(tuple));
-        return new InsertNode(tupleIterator, transactionId);
+        return new InsertNode(tupleIterator, tableId,transactionId);
     }
 
 }

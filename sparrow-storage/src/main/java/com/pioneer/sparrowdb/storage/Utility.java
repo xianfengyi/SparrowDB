@@ -121,7 +121,7 @@ public class Utility {
         HeapPage page = null;
         try {
             page = new HeapPage(pid, HeapPage.createEmptyPageData());
-        } catch (IOException e) {
+        } catch (Exception e) {
             // this should never happen for an empty page; bail;
             throw new RuntimeException("failed to create empty page in HeapFile");
         }

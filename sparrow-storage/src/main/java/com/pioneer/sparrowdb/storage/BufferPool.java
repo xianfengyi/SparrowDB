@@ -233,7 +233,7 @@ public class BufferPool {
             if (p.isDirty() != null && p.isDirty().equals(tid)) {
                 flushPage(p);
                 if (p.isDirty() == null) {
-                    p.setBeforeImage();
+                    p.saveBeforePage();
                 }
             }
         }

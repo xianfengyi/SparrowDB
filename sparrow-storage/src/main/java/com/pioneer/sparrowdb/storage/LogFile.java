@@ -246,7 +246,7 @@ public class LogFile {
         for (int i = 0; i < pageInfo.length; i++) {
             raf.writeInt(pageInfo[i]);
         }
-        byte[] pageData = p.getPageData();
+        byte[] pageData = p.serialize();
         raf.writeInt(pageData.length);
         raf.write(pageData);
         //        Debug.log ("WROTE PAGE DATA, CLASS = " + pageClassName + ", table = " +  pid.getTableId() + ", page = " + pid.pageno());

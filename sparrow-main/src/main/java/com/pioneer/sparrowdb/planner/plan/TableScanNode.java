@@ -22,7 +22,7 @@ public class TableScanNode extends PlanNode {
     public TableScanNode(int id, String name, TransactionId transactionId) {
         this.id = id;
         this.name = name;
-        seqScan = new SeqScan(transactionId, 1);
+        seqScan = new SeqScan(transactionId, id);
         try {
             seqScan.open();
         } catch (TransactionAbortedException e) {

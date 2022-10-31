@@ -17,19 +17,20 @@ public class InsertNode extends PlanNode {
 
     private DbIterator dbIterator;
 
+    private int tableId;
+
     private int insertCount;
 
-    public InsertNode(DbIterator dbIterator,TransactionId transactionId) {
+    public InsertNode(DbIterator dbIterator, int tableId, TransactionId transactionId) {
         this.dbIterator = dbIterator;
-        this.transactionId =transactionId;
+        this.tableId = tableId;
+        this.transactionId = transactionId;
     }
 
     public void execute() throws TransactionAbortedException {
         while (dbIterator.hasNext()) {
             Tuple next = dbIterator.next();
             try {
-                // FIXME: now, the table is a fix value
-                int tableId = 1;
                 Database.getBufferPool().insertTuple(transactionId, tableId, next);
                 insertCount++;
             } catch (IOException e) {

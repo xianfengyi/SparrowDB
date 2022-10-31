@@ -222,7 +222,6 @@ public class TupleDesc implements Serializable {
      * Note that tuples from a given TupleDesc are of a fixed size.
      */
     public int getSize() {
-        // some code goes here
         int totalSize = 0;
         for (TDItem item : tdItems) {
             totalSize += item.fieldType.getLen();

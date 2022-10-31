@@ -26,7 +26,7 @@ public class CreateNode extends PlanNode {
 
         int i=0;
         for(DbTable.Column column:dbTable.getColumns()){
-            if(column.getColumnType().toLowerCase().equals("integer")){
+            if(column.getColumnType().equals("integer")){
                 types[i]= Type.INT_TYPE;
             }
             names[i]=column.getColumnName();
@@ -34,9 +34,10 @@ public class CreateNode extends PlanNode {
         }
         TupleDesc descriptor = new TupleDesc(types, names);
         try {
-            String datFilePath = "data/" + dbTable.getName() + "_file.dat";
+            String datFilePath = "/data/" + dbTable.getName() + "_file.dat";
             File file = new File(datFilePath);
-            if (!file.exists()){
+            if (file.exists()){
+                file.delete();
                 file.createNewFile();
             }
             HeapFile table1 = new HeapFile(new File(datFilePath), descriptor);

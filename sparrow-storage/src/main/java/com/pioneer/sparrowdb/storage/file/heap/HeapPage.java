@@ -2,6 +2,7 @@ package com.pioneer.sparrowdb.storage.file.heap;
 
 import com.pioneer.sparrowdb.storage.*;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
+import com.pioneer.sparrowdb.storage.file.bptree.BPTreePageID;
 import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
 import java.io.*;
@@ -58,7 +59,7 @@ public class HeapPage implements Page {
         this.tuples = new Tuple[maxNumSlots];
 
         deserialize(pageData);
-        setBeforeImage();
+        saveBeforePage();
     }
 
     @Override
@@ -120,6 +121,8 @@ public class HeapPage implements Page {
     protected void fillBytes(DataOutputStream dos, int bytesNum) throws IOException {
         if (dos == null) {
             throw new StorageException("fill bytes error: stream is closed ");
+        }else if(bytesNum<=0){
+            return;
         }
         byte[] emptyBytes = new byte[bytesNum];
         dos.write(emptyBytes, 0, bytesNum);
@@ -137,6 +140,10 @@ public class HeapPage implements Page {
             tuples = new Tuple[maxNumSlots];
             // allocate and read the actual records of this page
             for (int i = 0; i < tuples.length; i++) {
+                if(!isSlotUsed(i)){
+                    tuples[i]=null;
+                    continue;
+                }
                 tuples[i] = readTuple(dis, i);
             }
             dis.close();
@@ -190,7 +197,7 @@ public class HeapPage implements Page {
         if (maxNumSlots != 0) {
             return maxNumSlots;
         }
-        int numTuples = (BufferPool.PAGE_SIZE * 8) / (tupleDesc.getSize() * 8 + 1);
+        int numTuples = (BufferPool.PAGE_SIZE) / (tupleDesc.getSize() + 1);
         return numTuples;
     }
 
@@ -220,7 +227,7 @@ public class HeapPage implements Page {
     }
 
     @Override
-    public void setBeforeImage() {
+    public void saveBeforePage() {
         this.oldData = serialize().clone();
     }
 

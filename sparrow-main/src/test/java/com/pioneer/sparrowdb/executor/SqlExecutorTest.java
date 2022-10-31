@@ -6,7 +6,6 @@ import com.pioneer.sparrowdb.storage.TupleDesc;
 import com.pioneer.sparrowdb.storage.Type;
 import com.pioneer.sparrowdb.storage.file.heap.HeapFile;
 import com.pioneer.sparrowdb.utils.HeapFileEncoder;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -15,50 +14,20 @@ import java.io.IOException;
 public class SqlExecutorTest {
 
     @Test
-    public void testSelect() {
-        setUp();
-        String sql = "select field0,field1,field2 from test";
-
-        SqlExecutor executor = new SqlExecutor();
-        executor.execute(sql);
-    }
-
-    @Test
-    public void testInsert() {
-        setUp();
-        SqlExecutor executor = new SqlExecutor();
-
-        String insertSql = "insert into test(field0,field1,field2)values(6,6,6)";
-        executor.execute(insertSql);
-
-        String selectSql = "select field0,field1,field2 from test";
-        executor.execute(selectSql);
-    }
-
-    @Test
-    public void deleteInsert() {
-        setUp();
-        SqlExecutor executor = new SqlExecutor();
-
-        String deleteSql = "delete from test where field0=11";
-        executor.execute(deleteSql);
-
-        String selectSql = "select field0,field1,field2 from test";
-        executor.execute(selectSql);
-    }
-
-
-    @Test
-    public void testCreateTable(){
+    public void testSQL() {
         SqlExecutor executor = new SqlExecutor();
         String createSql = "create table test(id integer,age integer)";
         executor.execute(createSql);
 
-        String insertSql = "insert into test(id,age)values(1,10)";
-        executor.execute(insertSql);
+        executor.execute("insert into test(id,age)values(1,10)");
+        executor.execute("insert into test(id,age)values(2,20)");
 
         String selectSql = "select id,age from test";
         executor.execute(selectSql);
+
+        System.out.println("after delete.....");
+        executor.execute("delete from test where id=2");
+        executor.execute("select id,age from test");
     }
 
     private void setUp() {

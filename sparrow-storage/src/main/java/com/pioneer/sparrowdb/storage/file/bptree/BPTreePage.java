@@ -1,6 +1,7 @@
 package com.pioneer.sparrowdb.storage.file.bptree;
 
 import com.pioneer.sparrowdb.storage.Page;
+import com.pioneer.sparrowdb.storage.PageID;
 import com.pioneer.sparrowdb.storage.TupleDesc;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
 
@@ -35,7 +36,7 @@ public abstract class BPTreePage implements Page {
     protected byte[] beforePageData;
 
     @Override
-    public BPTreePageID getPageID() {
+    public PageID getId() {
         return pageID;
     }
 

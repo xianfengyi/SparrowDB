@@ -57,19 +57,19 @@ public class Catalog {
         if (name == null || pkeyField == null) {
             throw new IllegalArgumentException();
         }
-        int tableid = file.getTableId();
+        int tableId = file.getTableId();
         if (name2id.containsKey(name)) {
-            //当表名冲突时，删除之前的插入的表
+            // 当表名冲突时，删除之前的插入的表
             int id = name2id.get(name);
             id2file.remove(id);
             id2name.remove(id);
             id2pkey.remove(id);
             name2id.remove(name);
         }
-        id2file.put(tableid, file);
-        id2name.put(tableid, name);
-        id2pkey.put(tableid, pkeyField);
-        name2id.put(name, tableid);
+        id2file.put(tableId, file);
+        id2name.put(tableId, name);
+        id2pkey.put(tableId, pkeyField);
+        name2id.put(name, tableId);
     }
 
     public void addTable(TableFile file, String name) {
