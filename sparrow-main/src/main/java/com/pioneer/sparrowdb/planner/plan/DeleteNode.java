@@ -1,6 +1,6 @@
 package com.pioneer.sparrowdb.planner.plan;
 
-import com.pioneer.sparrowdb.storage.Database;
+import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.DbIterator;
 import com.pioneer.sparrowdb.storage.Tuple;
 import com.pioneer.sparrowdb.storage.exception.TransactionException;
@@ -22,7 +22,7 @@ public class DeleteNode extends PlanNode {
     public void execute() throws TransactionException {
         while (dbIterator.hasNext()) {
             Tuple next = dbIterator.next();
-            Database.getBufferPool().deleteTuple(transactionId, next);
+            DataBase.getBufferPool().deleteTuple(transactionId, next);
             deleteCount++;
         }
     }

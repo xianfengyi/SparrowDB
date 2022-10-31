@@ -1,6 +1,6 @@
 package com.pioneer.sparrowdb.storage.cache;
 
-import com.pioneer.sparrowdb.storage.Database;
+import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.Page;
 import com.pioneer.sparrowdb.storage.PageID;
 import com.pioneer.sparrowdb.storage.exception.CacheException;
@@ -80,7 +80,7 @@ public class PageLruCache extends LruCache<PageID, Page> {
             throw new IllegalArgumentException();
         }
         //访问磁盘获得该page
-        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(pid.getTableId());
+        HeapFile table = (HeapFile) DataBase.getCatalog().getDbFile(pid.getTableId());
         HeapPage originalPage = (HeapPage) table.readPage(pid);
         Node node = new Node(pid, originalPage);
         cachedEntries.put(pid, node);

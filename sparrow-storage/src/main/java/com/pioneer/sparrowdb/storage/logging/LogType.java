@@ -1,4 +1,4 @@
-package com.pioneer.sparrowdb.storage.file.logfile;
+package com.pioneer.sparrowdb.storage.logging;
 
 public interface LogType {
 

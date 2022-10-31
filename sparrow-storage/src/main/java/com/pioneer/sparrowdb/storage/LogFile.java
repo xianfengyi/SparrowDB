@@ -155,7 +155,7 @@ public class LogFile {
         // must have buffer pool lock before proceeding, since this
         // calls rollback
 
-        synchronized (Database.getBufferPool()) {
+        synchronized (DataBase.getBufferPool()) {
 
             synchronized(this) {
                 preAppend();
@@ -325,7 +325,7 @@ public class LogFile {
     /** Checkpoint the log and write a checkpoint record. */
     public void logCheckpoint() throws IOException {
         //make sure we have buffer pool lock before proceeding
-        synchronized (Database.getBufferPool()) {
+        synchronized (DataBase.getBufferPool()) {
             synchronized (this) {
                 //Debug.log("CHECKPOINT, offset = " + raf.getFilePointer());
                 preAppend();
@@ -333,7 +333,7 @@ public class LogFile {
                 Set<Long> keys = tidToFirstLogRecord.keySet();
                 Iterator<Long> els = keys.iterator();
                 force();
-                Database.getBufferPool().flushAllPages();
+                DataBase.getBufferPool().flushAllPages();
                 startCpOffset = raf.getFilePointer();
                 raf.writeInt(CHECKPOINT_RECORD);
                 raf.writeLong(-1); //no tid , but leave space for convenience
@@ -469,7 +469,7 @@ public class LogFile {
      */
     public void rollback(TransactionID tid)
             throws NoSuchElementException, IOException {
-        synchronized (Database.getBufferPool()) {
+        synchronized (DataBase.getBufferPool()) {
             synchronized(this) {
                 preAppend();
                 // some code goes here
@@ -496,7 +496,7 @@ public class LogFile {
      updates of uncommitted transactions are not installed.
      */
     public void recover() throws IOException {
-        synchronized (Database.getBufferPool()) {
+        synchronized (DataBase.getBufferPool()) {
             synchronized (this) {
                 recoveryUndecided = false;
                 // some code goes here

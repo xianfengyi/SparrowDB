@@ -1,7 +1,7 @@
 package com.pioneer.sparrowdb.storage;
 
-import com.pioneer.sparrowdb.storage.file.logfile.RedoLogFile;
-import com.pioneer.sparrowdb.storage.file.logfile.UndoLogFile;
+import com.pioneer.sparrowdb.storage.logging.RedoLogFile;
+import com.pioneer.sparrowdb.storage.logging.UndoLogFile;
 import com.pioneer.sparrowdb.storage.transaction.LockManager;
 
 import java.io.File;
@@ -15,9 +15,9 @@ import java.io.File;
  * from anywhere.
  */
 
-public class Database {
+public class DataBase {
 
-    private static Database _instance = new Database();
+    private static DataBase _instance = new DataBase();
 
     /**
      * 数据目录
@@ -44,7 +44,7 @@ public class Database {
      */
     private final RedoLogFile redoLogFile;
 
-    private Database() {
+    private DataBase() {
         this.catalog = new Catalog();
         this.bufferPool = new BufferPool(BufferPool.DEFAULT_PAGES);
         this.lockManager = new LockManager();
@@ -56,7 +56,7 @@ public class Database {
      * reset the database, used for unit tests only.
      */
     public static void reset() {
-        _instance = new Database();
+        _instance = new DataBase();
     }
 
     public static Catalog getCatalog() {

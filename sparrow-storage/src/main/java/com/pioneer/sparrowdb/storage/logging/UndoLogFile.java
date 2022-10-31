@@ -1,6 +1,6 @@
-package com.pioneer.sparrowdb.storage.file.logfile;
+package com.pioneer.sparrowdb.storage.logging;
 
-import com.pioneer.sparrowdb.storage.Database;
+import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.Page;
 import com.pioneer.sparrowdb.storage.TableFile;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
@@ -119,9 +119,9 @@ public class UndoLogFile {
                     ObjectInputStream inputStream = new ObjectInputStream(bais);
                     Page beforePage = (Page) inputStream.readObject();
 
-                    TableFile tableFile = Database.getCatalog().getDbFile(beforePage.getId().getTableId());
+                    TableFile tableFile = DataBase.getCatalog().getDbFile(beforePage.getId().getTableId());
                     tableFile.writePage(beforePage);
-                    Database.getBufferPool().discardPages(Collections.singletonList(beforePage.getId()));
+                    DataBase.getBufferPool().discardPages(Collections.singletonList(beforePage.getId()));
                 }
                 // 已经到开始位置，结束循环
                 if (txStartOffset == offsetToRead) {

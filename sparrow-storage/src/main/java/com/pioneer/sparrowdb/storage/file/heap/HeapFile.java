@@ -77,7 +77,7 @@ public class HeapFile implements TableFile {
             PageID pageID = new HeapPageId(this.getTableId(), 0);
             heapPage = new HeapPage((HeapPageId)pageID, HeapPage.createEmptyPageData());
             writePage(heapPage);
-            heapPage = (HeapPage) Database.getBufferPool().getPage(transactionId, pageID);
+            heapPage = (HeapPage) DataBase.getBufferPool().getPage(transactionId, pageID);
         } else {
             heapPage = (HeapPage) getFirstPageHasEmptySlot(transactionId, curPageCount);
         }
@@ -88,7 +88,7 @@ public class HeapFile implements TableFile {
     @Override
     public Page deleteTuple(TransactionID tid, Tuple tuple) throws StorageException {
         PageID pid = tuple.getRecordId().getPageId();
-        HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid);
+        HeapPage page = (HeapPage) DataBase.getBufferPool().getPage(tid, pid);
         page.deleteTuple(tuple);
         return page;
     }
@@ -105,7 +105,7 @@ public class HeapFile implements TableFile {
     private Page getFirstPageHasEmptySlot(TransactionID tid, int curPageCount) {
         for (int pageNo = 0; pageNo < curPageCount; pageNo++) {
             HeapPageId heapPageId = new HeapPageId(this.getTableId(), pageNo);
-            HeapPage heapPage = (HeapPage) Database.getBufferPool().getPage(tid, heapPageId);
+            HeapPage heapPage = (HeapPage) DataBase.getBufferPool().getPage(tid, heapPageId);
             if (heapPage.hasEmptySlot()) {
                 return heapPage;
             }
@@ -126,7 +126,7 @@ public class HeapFile implements TableFile {
         }
 
         public Iterator<Tuple> getTuplesInPage(HeapPageId pid) throws StorageException {
-            HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid);
+            HeapPage page = (HeapPage) DataBase.getBufferPool().getPage(tid, pid);
             return page.tupleIterator();
         }
 

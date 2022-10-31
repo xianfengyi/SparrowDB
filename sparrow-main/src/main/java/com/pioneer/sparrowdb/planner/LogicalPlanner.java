@@ -61,7 +61,7 @@ public class LogicalPlanner {
 
     private PlanNode getTableScanNode(Table table, TransactionID transactionId) {
         String tableName = table.getName().toString();
-        int tableId = Database.getCatalog().getTableId(tableName);
+        int tableId = DataBase.getCatalog().getTableId(tableName);
         return new TableScanNode(tableId, tableName, transactionId);
     }
 
@@ -110,15 +110,15 @@ public class LogicalPlanner {
             }
             tuples.add(tuple);
         }
-        int tableId= Database.getCatalog().getTableId(table.getName().toString());
-        TupleDesc tupleDesc = Database.getCatalog().getTupleDesc(tableId);
+        int tableId= DataBase.getCatalog().getTableId(table.getName().toString());
+        TupleDesc tupleDesc = DataBase.getCatalog().getTupleDesc(tableId);
         TupleIterator tupleIterator = new TupleIterator(tupleDesc, tuples);
         return new DeleteNode(tupleIterator, transactionId);
     }
 
     private PlanNode createInsertPlan(Insert statement, TransactionID transactionId) {
-        int tableId = Database.getCatalog().getTableId(statement.getTarget().toString());
-        TupleDesc tupleDesc = Database.getCatalog().getTupleDesc(tableId);
+        int tableId = DataBase.getCatalog().getTableId(statement.getTarget().toString());
+        TupleDesc tupleDesc = DataBase.getCatalog().getTupleDesc(tableId);
         Tuple tuple = new Tuple(tupleDesc);
 
         QueryBody queryBody = statement.getQuery().getQueryBody();

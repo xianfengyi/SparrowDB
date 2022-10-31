@@ -1,6 +1,6 @@
 package com.pioneer.sparrowdb.planner.plan;
 
-import com.pioneer.sparrowdb.storage.Database;
+import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.Tuple;
 import com.pioneer.sparrowdb.storage.TupleDesc;
 import com.pioneer.sparrowdb.storage.Type;
@@ -41,7 +41,7 @@ public class CreateNode extends PlanNode {
                 file.createNewFile();
             }
             HeapFile table1 = new HeapFile(new File(datFilePath), descriptor);
-            Database.getCatalog().addTable(table1, dbTable.getName());
+            DataBase.getCatalog().addTable(table1, dbTable.getName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

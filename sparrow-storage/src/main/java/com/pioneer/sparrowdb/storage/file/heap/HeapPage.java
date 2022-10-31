@@ -46,13 +46,13 @@ public class HeapPage implements Page {
      * ceiling(no. tuple slots / 8)
      * <p>
      *
-     * @see Database#getCatalog
+     * @see DataBase#getCatalog
      * @see Catalog#getTupleDesc
      * @see BufferPool#PAGE_SIZE
      */
     public HeapPage(HeapPageId heapPageId, byte[] pageData) {
         this.heapPageId = heapPageId;
-        this.tupleDesc = Database.getCatalog().getTupleDesc(heapPageId.getTableId());
+        this.tupleDesc = DataBase.getCatalog().getTupleDesc(heapPageId.getTableId());
         this.maxNumSlots = getMaxSlotNum();
         this.slotUsageBitMap = new boolean[this.maxNumSlots];
         this.tuples = new Tuple[maxNumSlots];

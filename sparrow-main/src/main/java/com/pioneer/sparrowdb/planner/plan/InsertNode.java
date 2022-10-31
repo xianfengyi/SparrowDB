@@ -1,6 +1,6 @@
 package com.pioneer.sparrowdb.planner.plan;
 
-import com.pioneer.sparrowdb.storage.Database;
+import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.DbIterator;
 import com.pioneer.sparrowdb.storage.Tuple;
 import com.pioneer.sparrowdb.storage.TupleDesc;
@@ -31,7 +31,7 @@ public class InsertNode extends PlanNode {
         while (dbIterator.hasNext()) {
             Tuple next = dbIterator.next();
             try {
-                Database.getBufferPool().insertTuple(transactionId, tableId, next);
+                DataBase.getBufferPool().insertTuple(transactionId, tableId, next);
                 insertCount++;
             } catch (IOException e) {
                 e.printStackTrace();

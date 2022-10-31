@@ -1,7 +1,7 @@
 package com.pioneer.sparrowdb.executor;
 
 import com.pioneer.sparrowdb.storage.BufferPool;
-import com.pioneer.sparrowdb.storage.Database;
+import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.TupleDesc;
 import com.pioneer.sparrowdb.storage.Type;
 import com.pioneer.sparrowdb.storage.file.heap.HeapFile;
@@ -56,7 +56,7 @@ public class SqlExecutorTest {
         // and tell the catalog about the schema of this table.
         String datFilePath = SqlExecutorTest.class.getClassLoader().getResource("data/some_data_file.dat").getPath();
         HeapFile table1 = new HeapFile(new File(datFilePath), descriptor);
-        Database.getCatalog().addTable(table1, "test");
+        DataBase.getCatalog().addTable(table1, "test");
     }
 
 }

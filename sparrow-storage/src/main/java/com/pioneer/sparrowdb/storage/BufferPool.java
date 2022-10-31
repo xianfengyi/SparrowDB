@@ -76,7 +76,7 @@ public class BufferPool {
             return page;
         }
         //未命中，访问磁盘并将其缓存
-        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(pid.getTableId());
+        HeapFile table = (HeapFile) DataBase.getCatalog().getDbFile(pid.getTableId());
         HeapPage newPage = (HeapPage) table.readPage(pid);
         Page removedPage = lruPagesPool.put(pid, newPage);
         if (removedPage != null) {
@@ -149,7 +149,7 @@ public class BufferPool {
      * @param t       the tuple to add
      */
     public void insertTuple(TransactionID tid, int tableId, Tuple t) throws StorageException, IOException, TransactionException {
-        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(tableId);
+        HeapFile table = (HeapFile) DataBase.getCatalog().getDbFile(tableId);
         Page page = table.insertTuple(tid, t);
         page.markDirty(true, tid);
     }
@@ -169,7 +169,7 @@ public class BufferPool {
      */
     public void deleteTuple(TransactionID tid, Tuple t) throws StorageException, TransactionException {
         int tableId = t.getRecordId().getPageId().getTableId();
-        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(tableId);
+        HeapFile table = (HeapFile) DataBase.getCatalog().getDbFile(tableId);
         Page affectedPage = table.deleteTuple(tid, t);
         affectedPage.markDirty(true, tid);
     }
@@ -206,7 +206,7 @@ public class BufferPool {
      */
     private synchronized void flushPage(Page page) throws IOException {
         HeapPage dirty_page = (HeapPage) page;
-        HeapFile table = (HeapFile) Database.getCatalog().getDbFile(page.getId().getTableId());
+        HeapFile table = (HeapFile) DataBase.getCatalog().getDbFile(page.getId().getTableId());
         table.writePage(dirty_page);
         dirty_page.markDirty(false, null);
     }

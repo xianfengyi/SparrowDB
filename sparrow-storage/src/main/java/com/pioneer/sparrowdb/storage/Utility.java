@@ -141,7 +141,7 @@ public class Utility {
         // create the HeapFile and add it to the catalog
         TupleDesc td = getTupleDesc(cols);
         HeapFile hf = new HeapFile(f, td);
-        Database.getCatalog().addTable(hf, UUID.randomUUID().toString());
+        DataBase.getCatalog().addTable(hf, UUID.randomUUID().toString());
         return hf;
     }
 
@@ -149,7 +149,7 @@ public class Utility {
         // create the HeapFile and add it to the catalog
         TupleDesc td = getTupleDesc(cols, colPrefix);
         HeapFile hf = new HeapFile(f, td);
-        Database.getCatalog().addTable(hf, UUID.randomUUID().toString());
+        DataBase.getCatalog().addTable(hf, UUID.randomUUID().toString());
         return hf;
     }
 

@@ -1,7 +1,7 @@
 package com.pioneer.sparrowdb.storage.transaction;
 
 import com.pioneer.sparrowdb.storage.BufferPool;
-import com.pioneer.sparrowdb.storage.Database;
+import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.Page;
 import com.pioneer.sparrowdb.storage.PageID;
 import com.pioneer.sparrowdb.storage.exception.TransactionException;
@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class LockManager {
 
@@ -154,7 +153,7 @@ public class LockManager {
 
     public List<Page> getPages(TransactionID transactionId) {
         List<PageID> pageIDS = transactionTable.get(transactionId);
-        BufferPool bufferPool = Database.getBufferPool();
+        BufferPool bufferPool = DataBase.getBufferPool();
 
         List<Page> pages = new ArrayList<>();
         for(PageID pageID: pageIDS){

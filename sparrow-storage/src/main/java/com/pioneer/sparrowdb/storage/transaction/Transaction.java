@@ -1,10 +1,10 @@
 package com.pioneer.sparrowdb.storage.transaction;
 
-import com.pioneer.sparrowdb.storage.Database;
+import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.Page;
 import com.pioneer.sparrowdb.storage.PageID;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
-import com.pioneer.sparrowdb.storage.file.logfile.RedoLogFile;
+import com.pioneer.sparrowdb.storage.logging.RedoLogFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,10 +42,10 @@ public class Transaction {
     }
 
     public void start() {
-        Database.getUndoLogFile().recordTxStart(transactionId);
+        DataBase.getUndoLogFile().recordTxStart(transactionId);
 
         try {
-            Database.getRedoLogFile().recordTxStart(transactionId);
+            DataBase.getRedoLogFile().recordTxStart(transactionId);
         } catch (IOException e) {
             throw new StorageException(" redo log recordTxStart error ", e);
         }
@@ -61,9 +61,9 @@ public class Transaction {
     public void commit() {
         // STEAL/No-force策略，事务提交，脏页也可不刷盘,需记录日志到redolog
         try {
-            RedoLogFile redoLogFile = Database.getRedoLogFile();
+            RedoLogFile redoLogFile = DataBase.getRedoLogFile();
             redoLogFile.recordTxCommit(transactionId);
-            List<Page> pages = Database.getLockManager().getPages(transactionId);
+            List<Page> pages = DataBase.getLockManager().getPages(transactionId);
             for (Page page : pages) {
                 if (page.isDirty()!=null) {
                     redoLogFile.recordPageChange(transactionId, page.getBeforeImage(), page);
@@ -73,15 +73,15 @@ public class Transaction {
         } catch (IOException e) {
             throw new StorageException("redo log recordTxCommit error", e);
         }
-        List<PageID> pageIDs = Database.getLockManager().getPageIDs(transactionId);
+        List<PageID> pageIDs = DataBase.getLockManager().getPageIDs(transactionId);
         // 事务提交后更新页快照
         for (PageID pageID : pageIDs) {
-            Page page = Database.getBufferPool().getPage(transactionId,pageID);
+            Page page = DataBase.getBufferPool().getPage(transactionId,pageID);
             page.saveBeforePage();
         }
 
         // 释放锁
-        Database.getLockManager().releaseLock(transactionId);
+        DataBase.getLockManager().releaseLock(transactionId);
     }
 
     /**
@@ -95,10 +95,10 @@ public class Transaction {
 
         // Steal/No-force策略
         // 将事务修改过的页面，在磁盘刷回原始版本，缓存中丢弃
-        Database.getUndoLogFile().rollback(transactionId);
+        DataBase.getUndoLogFile().rollback(transactionId);
 
         // 释放锁
-        Database.getLockManager().releaseLock(transactionId);
+        DataBase.getLockManager().releaseLock(transactionId);
     }
 
     @Override

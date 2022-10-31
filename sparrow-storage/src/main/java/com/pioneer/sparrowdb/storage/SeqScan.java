@@ -42,7 +42,7 @@ public class SeqScan implements DbIterator {
         this.tid = tid;
         this.tableAlias = tableAlias;
         this.tableid = tableid;
-        tupleIterator = Database.getCatalog().getDbFile(tableid).iterator(tid);
+        tupleIterator = DataBase.getCatalog().getDbFile(tableid).iterator(tid);
     }
 
     /**
@@ -50,7 +50,7 @@ public class SeqScan implements DbIterator {
      * be the actual name of the table in the catalog of the database
      */
     public String getTableName() {
-        return Database.getCatalog().getTableName(tableid);
+        return DataBase.getCatalog().getTableName(tableid);
     }
 
     /**
@@ -79,7 +79,7 @@ public class SeqScan implements DbIterator {
     }
 
     public SeqScan(TransactionID tid, int tableid) {
-        this(tid, tableid, Database.getCatalog().getTableName(tableid));
+        this(tid, tableid, DataBase.getCatalog().getTableName(tableid));
     }
 
     public void open() throws StorageException, TransactionException {
@@ -98,7 +98,7 @@ public class SeqScan implements DbIterator {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        TupleDesc desc = Database.getCatalog().getTupleDesc(tableid);
+        TupleDesc desc = DataBase.getCatalog().getTupleDesc(tableid);
         int fieldNum = desc.numFields();
         Type[] types = new Type[fieldNum];
         String[] names = new String[fieldNum];
