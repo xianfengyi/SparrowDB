@@ -33,6 +33,6 @@ public interface PageID extends Serializable{
      */
     boolean equals(Object o);
 
-    int pageNumber();
+    int getPageNo();
 }
 

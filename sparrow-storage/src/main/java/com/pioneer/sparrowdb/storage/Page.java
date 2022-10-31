@@ -1,6 +1,7 @@
 package com.pioneer.sparrowdb.storage;
 
 import com.pioneer.sparrowdb.storage.exception.StorageException;
+import com.pioneer.sparrowdb.storage.file.bptree.BPTreePageID;
 import com.pioneer.sparrowdb.storage.transaction.TransactionId;
 
 import java.io.IOException;
@@ -91,4 +92,7 @@ public interface Page {
 
     Iterator<Tuple> tupleIterator();
 
+    BPTreePageID getPageID();
+
+    void saveBeforePage();
 }

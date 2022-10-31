@@ -36,7 +36,7 @@ public class HeapPageId implements PageID {
      * @return the page number in the table getTableId() associated with
      * this PageId
      */
-    public int pageNumber() {
+    public int getPageNo() {
         // some code goes here
         return pageNum;
     }
@@ -67,7 +67,7 @@ public class HeapPageId implements PageID {
         }
         if (o instanceof PageID) {
             PageID another = (PageID) o;
-            return this.pageNum == another.pageNumber()
+            return this.pageNum == another.getPageNo()
                     && this.tableId == another.getTableId();
         } else return false;
     }
@@ -82,7 +82,7 @@ public class HeapPageId implements PageID {
         int data[] = new int[2];
 
         data[0] = getTableId();
-        data[1] = pageNumber();
+        data[1] = getPageNo();
 
         return data;
     }
