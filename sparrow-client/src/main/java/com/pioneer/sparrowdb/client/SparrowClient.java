@@ -55,6 +55,15 @@ public class SparrowClient {
         receiverThread.start();
     }
 
+    public void handleCommand(String command) {
+        try {
+            objectOutput.writeObject(command);
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Unexpected error while transmitting command", e);
+        }
+    }
+
     /**
      * This helper class prints out the results that come back from the
      * server.  It is intended to run within a separate thread.

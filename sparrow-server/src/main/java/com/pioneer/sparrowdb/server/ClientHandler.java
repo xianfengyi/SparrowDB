@@ -40,7 +40,7 @@ public class ClientHandler extends Thread {
             while (true) {
                 String command = (String) objectInput.readObject();
                 System.out.println(command);
-                objectOutput.writeObject("received");
+                objectOutput.writeObject("hello,i received your message:" + command);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
