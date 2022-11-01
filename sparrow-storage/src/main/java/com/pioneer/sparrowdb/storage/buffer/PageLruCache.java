@@ -1,4 +1,4 @@
-package com.pioneer.sparrowdb.storage.cache;
+package com.pioneer.sparrowdb.storage.buffer;
 
 import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.Page;

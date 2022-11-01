@@ -1,5 +1,7 @@
 package com.pioneer.sparrowdb.storage;
 
+import com.pioneer.sparrowdb.storage.buffer.BufferPool;
+
 import java.io.Serializable;
 
 /** PageId is an interface to a specific page of a specific table. */

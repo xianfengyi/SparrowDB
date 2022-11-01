@@ -1,6 +1,6 @@
 package com.pioneer.sparrowdb.executor;
 
-import com.pioneer.sparrowdb.storage.BufferPool;
+import com.pioneer.sparrowdb.storage.buffer.BufferPool;
 import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.TupleDesc;
 import com.pioneer.sparrowdb.storage.Type;

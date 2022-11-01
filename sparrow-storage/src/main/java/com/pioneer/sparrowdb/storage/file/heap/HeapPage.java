@@ -1,6 +1,7 @@
 package com.pioneer.sparrowdb.storage.file.heap;
 
 import com.pioneer.sparrowdb.storage.*;
+import com.pioneer.sparrowdb.storage.buffer.BufferPool;
 import com.pioneer.sparrowdb.storage.exception.StorageException;
 import com.pioneer.sparrowdb.storage.transaction.TransactionID;
 

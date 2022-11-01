@@ -1,5 +1,6 @@
 package com.pioneer.sparrowdb.storage;
 
+import com.pioneer.sparrowdb.storage.buffer.BufferPool;
 import com.pioneer.sparrowdb.storage.logging.RedoLogFile;
 import com.pioneer.sparrowdb.storage.logging.UndoLogFile;
 import com.pioneer.sparrowdb.storage.transaction.LockManager;

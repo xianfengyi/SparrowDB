@@ -1,6 +1,6 @@
 package com.pioneer.sparrowdb.storage.transaction;
 
-import com.pioneer.sparrowdb.storage.BufferPool;
+import com.pioneer.sparrowdb.storage.buffer.BufferPool;
 import com.pioneer.sparrowdb.storage.DataBase;
 import com.pioneer.sparrowdb.storage.Page;
 import com.pioneer.sparrowdb.storage.PageID;
