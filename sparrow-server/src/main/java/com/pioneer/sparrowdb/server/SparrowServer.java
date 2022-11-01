@@ -10,17 +10,6 @@ public class SparrowServer extends Thread {
 
     private static final int SERVER_PORT = 9093;
 
-    public static void main(String[] args) {
-        SparrowServer server = new SparrowServer();
-        try {
-            server.startup();
-        } catch (IOException e) {
-            System.out.println("Couldn't start shared server:  " +
-                    e.getMessage());
-            e.printStackTrace(System.out);
-        }
-    }
-
     public void startup() throws IOException {
         ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
 
