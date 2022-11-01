@@ -1,5 +1,6 @@
 package com.pioneer.sparrowdb.cli;
 
+import com.pioneer.sparrowdb.client.SparrowClient;
 import jline.console.history.FileHistory;
 import jline.console.history.History;
 import jline.console.history.MemoryHistory;
@@ -15,6 +16,8 @@ import static jline.internal.Configuration.getUserHome;
 public class Console {
 
     private static final String PROMPT_NAME = "sparrow";
+
+    private static SparrowClient client = new SparrowClient();
 
     public boolean run() {
         runConsole();
@@ -63,6 +66,7 @@ public class Console {
                 buffer.append(line).append("\n");
                 // execute any complete statements
                 String sql = buffer.toString();
+                client.handleCommand(sql);
 
                 // replace buffer with trailing partial statement
                 buffer = new StringBuilder();
@@ -99,11 +103,5 @@ public class Console {
         }
         history.setAutoTrim(true);
         return history;
-    }
-
-
-    public static void main(String[] args) {
-        System.out.println("Hello world!");
-        runConsole();
     }
 }

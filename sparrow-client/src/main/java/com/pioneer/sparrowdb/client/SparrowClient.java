@@ -7,6 +7,12 @@ import java.io.PrintStream;
 import java.net.Socket;
 
 public class SparrowClient {
+
+    private static final String DEFAULT_SERVER_HOST="127.0.0.1";
+
+    private static final int DEFAULT_SERVER_PORT =9093;
+
+
     /**
      * The socket used to communicate with the shared server.
      */
@@ -39,12 +45,19 @@ public class SparrowClient {
      */
     private Thread receiverThread;
 
+    public SparrowClient(){
+        this(DEFAULT_SERVER_HOST,DEFAULT_SERVER_PORT);
+    }
 
-    public SparrowClient(String hostname, int port) throws IOException {
+    public SparrowClient(String hostname, int port) {
         // Try to establish a connection to the shared database server.
-        socket = new Socket(hostname, port);
-        objectOutput = new ObjectOutputStream(socket.getOutputStream());
-        objectInput = new ObjectInputStream(socket.getInputStream());
+        try {
+            socket = new Socket(hostname, port);
+            objectOutput = new ObjectOutputStream(socket.getOutputStream());
+            objectInput = new ObjectInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void startup() {
