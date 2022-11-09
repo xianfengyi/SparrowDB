@@ -65,3 +65,57 @@ statement
     ;
 ```
 
+### SQL Parser
+SQL parser 将SQL语法转化为AST, 可以通过Antlr4 Visitor模式实现，核心Parse逻辑如下：
+```java
+public class SqlParser {
+
+    public Statement createStatement(String sql) {
+        return (Statement) invokeParser("statement", sql, SparrowSQLParser::singleStatement);
+    }
+
+    private Node invokeParser(String name, String sql, Function<SparrowSQLParser, ParserRuleContext> parseFunction) {
+        try {
+            SparrowSQLLexer lexer = new SparrowSQLLexer(new CaseInsensitiveStream(CharStreams.fromString(sql)));
+            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+            SparrowSQLParser parser = new SparrowSQLParser(tokenStream);
+
+            // Override the default error strategy to not attempt inserting or deleting a token.
+            // Otherwise, it messes up error reporting
+            parser.setErrorHandler(new DefaultErrorStrategy() {
+                @Override
+                public Token recoverInline(Parser recognizer) throws RecognitionException {
+                    if (nextTokensContext == null) {
+                        throw new InputMismatchException(recognizer);
+                    } else {
+                        throw new InputMismatchException(recognizer, nextTokensState, nextTokensContext);
+                    }
+                }
+            });
+
+            parser.removeErrorListeners();
+
+            ParserRuleContext tree;
+            try {
+                // first, try parsing with potentially faster SLL mode
+                parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+                tree = parseFunction.apply(parser);
+            } catch (ParseCancellationException ex) {
+                // if we fail, parse with LL mode
+                tokenStream.reset(); // rewind input stream
+                parser.reset();
+
+                parser.getInterpreter().setPredictionMode(PredictionMode.LL);
+                tree = parseFunction.apply(parser);
+            }
+
+            return new AstBuilder(new ParsingOptions()).visit(tree);
+        } catch (StackOverflowError e) {
+            throw new ParsingException(name + " is too large (stack overflow while parsing)");
+        }
+    }
+}
+```
+## 执行器
+SQL查询引擎这块采用经典的火山模型，该计算模型将关系代数中每一种操作抽象为一个 Operator，将整个 SQL 构建成一个 Operator 树，查询树自顶向下的调用next()接口，数据则自底向上的被拉取处理。
+![迭代器模型](https://github.com/xianfengyi/photos/blob/main/sparrowdb/Iterator%20model.jpg)
