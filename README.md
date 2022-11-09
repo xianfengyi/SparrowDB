@@ -42,6 +42,7 @@ FROM table_name
 [LIMIT N][ OFFSET M]
 ```
 ### 语法设计
+SQL语法采用Antlr4设计，部分语法如下：
 ```antlrv4
 grammar SparrowSQL;
 
