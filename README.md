@@ -119,3 +119,39 @@ public class SqlParser {
 ## 执行器
 SQL查询引擎这块采用经典的火山模型，该计算模型将关系代数中每一种操作抽象为一个 Operator，将整个 SQL 构建成一个 Operator 树，查询树自顶向下的调用next()接口，数据则自底向上的被拉取处理。
 ![迭代器模型](https://github.com/xianfengyi/photos/blob/main/sparrowdb/Iterator%20model.jpg)
+
+比如查询到执行计划实现，采用火山模型，实现如下所示：
+```java
+public class LogicalPlanner {
+
+    public PlanNode planStatement(Statement statement, TransactionID transactionId) {
+        if (statement instanceof Insert) {
+            return createInsertPlan((Insert) statement, transactionId);
+        } else if (statement instanceof Delete) {
+            return createDeletePlan((Delete) statement, transactionId);
+        } else if (statement instanceof Query) {
+            return createQueryPlan((Query) statement, transactionId);
+        } else if (statement instanceof CreateTable) {
+            return createTablePlan((CreateTable) statement, transactionId);
+        }
+        throw new RuntimeException("not support this statement plan");
+    }
+
+    private PlanNode createQueryPlan(Query statement, TransactionID transactionId) {
+        QuerySpecification querySpecification = (QuerySpecification) statement.getQueryBody();
+        PlanNode root = null;
+
+        root = getTableScanNode(querySpecification.getFrom(), transactionId);
+
+        root = getWhereNode(root, querySpecification.getWhere());
+
+        root = getLimitNode(root, querySpecification.getLimit());
+
+        root = getOrderByNode(root, querySpecification.getOrderBy());
+
+        root = getGroupByNode(root, querySpecification.getGroupBy());
+
+        return getProjectNode(root, querySpecification.getSelect());
+    }
+}
+```
